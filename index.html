@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hustler Mindset | Register</title>
+  <meta name="description" content="Join the Hustler Mindset Ecosystem.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons (Phosphor Icons - CDN) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyChzuGUW81BSsQWVcC8xY2DOG8pUGbRnA4",
+      authDomain: "hustler-mindset.firebaseapp.com",
+      projectId: "hustler-mindset",
+      storageBucket: "hustler-mindset.firebasestorage.app",
+      messagingSenderId: "601940489235",
+      appId: "1:601940489235:web:eddf693f98404b97cf7be6",
+      measurementId: "G-HD8VP533TY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // Expose to window for inline script access
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.firebaseAuthFunctions = {
+      createUserWithEmailAndPassword,
+      signInWithPopup,
+      googleProvider,
+      ref,
+      set,
+      sendEmailVerification
+    };
+  </script>
+
+  <style>
+    :root {
+      /* Light Theme (Deep Purple + Gold) */
+      --bg-color: #f8f9fc;
+      --surface-color: #ffffff;
+      --text-main: #1a1a2e;
+      --text-muted: #6b7280;
+      --primary: #4c1d95;
+      --primary-hover: #3b1475;
+      --accent: #d4af37;
+      --accent-hover: #b8952b;
+      --border-color: #e5e7eb;
+      --error: #ef4444;
+      --success: #10b981;
+      --input-bg: #f3f4f6;
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme (Deep Black + Charcoal + Metallic Gold) */
+      --bg-color: #0a0a0a;
+      --surface-color: #121212;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #d4af37;
+      --primary-hover: #e5c35e;
+      --accent: #d4af37;
+      --accent-hover: #e5c35e;
+      --border-color: #262626;
+      --error: #f87171;
+      --success: #34d399;
+      --input-bg: #1a1a1a;
+      --glass-bg: rgba(18, 18, 18, 0.8);
+      --glass-border: rgba(255, 255, 255, 0.05);
+      --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+
+    /* Ambient Background */
+    .ambient-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .ambient-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+      transition: background 0.4s ease;
+    }
+    .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: var(--primary); }
+    .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: var(--accent); }
+
+    /* Auth Container */
+    .auth-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(20px);
+      opacity: 0;
+      position: relative;
+    }
+
+    @keyframes slideUp {
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Header */
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .logo span { color: var(--accent); }
+    .auth-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .theme-toggle:hover {
+      background: var(--border-color);
+      transform: scale(1.05);
+    }
+    .theme-toggle i { font-size: 20px; }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      color: var(--text-muted);
+      font-size: 20px;
+      transition: color 0.3s ease;
+    }
+    .form-input {
+      width: 100%;
+      padding: 14px 16px 14px 48px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-family: var(--font-body);
+      font-size: 15px;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(76, 29, 149, 0.1);
+    }
+    [data-theme="dark"] .form-input:focus {
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+    }
+    .form-input:focus + .input-icon {
+      color: var(--primary);
+    }
+    
+    /* Password Toggle */
+    .toggle-password {
+      position: absolute;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+    }
+    .toggle-password:hover { color: var(--text-main); }
+
+    /* Password Strength */
+    .strength-meter {
+      height: 4px;
+      background: var(--border-color);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+      display: flex;
+      gap: 4px;
+    }
+    .strength-segment {
+      flex: 1;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
+    .strength-text {
+      font-size: 12px;
+      margin-top: 6px;
+      display: block;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    [data-theme="dark"] .btn-primary { color: #000; }
+    
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .btn-primary:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .btn-google {
+      background: var(--surface-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      margin-top: 20px;
+    }
+    .btn-google:hover {
+      background: var(--input-bg);
+      transform: translateY(-2px);
+    }
+    .btn-google img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 24px 0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .divider::before { margin-right: 15px; }
+    .divider::after { margin-left: 15px; }
+
+    /* Footer link */
+    .auth-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    .auth-footer a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: currentColor;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    [data-theme="dark"] .spinner { border-color: rgba(0,0,0,0.3); border-top-color: #000; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Modals & Toasts */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal-content {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+    .modal-overlay.active .modal-content {
+      transform: scale(1);
+    }
+    .modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(212, 175, 55, 0.1);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px auto;
+    }
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .modal-text {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--input-bg);
+      border: none;
+      color: var(--text-muted);
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .close-modal:hover { background: var(--border-color); color: var(--text-main); }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--surface-color);
+      border-left: 4px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      animation: toastSlideDown 0.3s ease forwards;
+      pointer-events: all;
+      max-width: 90vw;
+      width: max-content;
+    }
+    .toast.error { border-left-color: var(--error); }
+    .toast.success { border-left-color: var(--success); }
+    .toast i { font-size: 20px; }
+    .toast.error i { color: var(--error); }
+    .toast.success i { color: var(--success); }
+
+    @keyframes toastSlideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes toastFadeOut {
+      to { transform: translateY(-20px); opacity: 0; }
+    }
+
+    @media (max-width: 500px) {
+      .auth-container { padding: 30px 20px; border-radius: 20px; }
+      .logo { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-bg">
+    <div class="ambient-blob blob-1"></div>
+    <div class="ambient-blob blob-2"></div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <div class="auth-container">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+      <i class="ph ph-moon" id="themeIcon"></i>
+    </button>
+
+    <div class="auth-header">
+      <div class="logo">HUSTLER <span>MINDSET</span></div>
+      <p class="auth-subtitle">Create an account to access the platform.</p>
+    </div>
+
+    <form id="registerForm" novalidate>
+      <div class="form-group">
+        <label class="form-label" for="fullName">Full Name</label>
+        <div class="input-wrapper">
+          <i class="ph ph-user input-icon"></i>
+          <input type="text" id="fullName" class="form-input" placeholder="John Doe" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <div class="input-wrapper">
+          <i class="ph ph-envelope-simple input-icon"></i>
+          <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone Number</label>
+        <div class="input-wrapper">
+          <i class="ph ph-phone input-icon"></i>
+          <input type="tel" id="phone" class="form-input" placeholder="+234 800 000 0000" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="input-wrapper">
+          <i class="ph ph-lock-key input-icon"></i>
+          <input type="password" id="password" class="form-input" placeholder="Create a password" required>
+          <button type="button" class="toggle-password" id="togglePassBtn">
+            <i class="ph ph-eye"></i>
+          </button>
+        </div>
+        <div class="strength-meter">
+          <div class="strength-segment" id="seg1"></div>
+          <div class="strength-segment" id="seg2"></div>
+          <div class="strength-segment" id="seg3"></div>
+          <div class="strength-segment" id="seg4"></div>
+        </div>
+        <span class="strength-text" id="strengthText">Enter a password</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirmPassword">Confirm Password</label>
+        <div class="input-wrapper">
+          <i class="ph ph-lock-key input-icon"></i>
+          <input type="password" id="confirmPassword" class="form-input" placeholder="Confirm your password" required>
+          <button type="button" class="toggle-password" id="toggleConfirmBtn">
+            <i class="ph ph-eye"></i>
+          </button>
+        </div>
+        <span class="strength-text" id="matchText" style="color: var(--error); display: none;">Passwords do not match</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <span id="btnText">Create Account</span>
+        <div class="spinner" id="btnSpinner"></div>
+      </button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <button type="button" class="btn btn-google" id="googleBtn">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+      Continue with Google
+    </button>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Log In</a>
+    </div>
+  </div>
+
+  <!-- Pending Approval Modal -->
+  <div class="modal-overlay" id="pendingModal">
+    <div class="modal-content">
+      <button class="close-modal" id="closeModalBtn"><i class="ph ph-x"></i></button>
+      <div class="modal-icon">
+        <i class="ph ph-hourglass-high"></i>
+      </div>
+      <h3 class="modal-title">Access Request Submitted</h3>
+      <p class="modal-text">Your access request has been submitted successfully. The Hustler Mindset CEO will review your application. You will gain access to the platform once your account has been approved.</p>
+      <button class="btn btn-primary" id="modalOkayBtn" style="margin-top: 10px;">Understood</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // THEME MANAGEMENT
+    // ==========================================
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const currentTheme = localStorage.getItem('theme') || 'dark'; // Default to dark as per prompt vibe
+
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    function updateThemeIcon(theme) {
+      if (theme === 'dark') {
+        themeIcon.classList.remove('ph-moon');
+        themeIcon.classList.add('ph-sun');
+      } else {
+        themeIcon.classList.remove('ph-sun');
+        themeIcon.classList.add('ph-moon');
+      }
+    }
+
+    // ==========================================
+    // TOAST NOTIFICATIONS
+    // ==========================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      let iconClass = 'ph-info';
+      if (type === 'error') iconClass = 'ph-warning-circle';
+      if (type === 'success') iconClass = 'ph-check-circle';
+
+      toast.innerHTML = `<i class="ph ${iconClass}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+
+      // Auto remove after 3.5s
+      setTimeout(() => {
+        toast.style.animation = 'toastFadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ==========================================
+    // PASSWORD VISIBILITY TOGGLE
+    // ==========================================
+    function setupPasswordToggle(btnId, inputId) {
+      const btn = document.getElementById(btnId);
+      const input = document.getElementById(inputId);
+      btn.addEventListener('click', () => {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        btn.innerHTML = type === 'password' ? '<i class="ph ph-eye"></i>' : '<i class="ph ph-eye-slash"></i>';
+      });
+    }
+    setupPasswordToggle('togglePassBtn', 'password');
+    setupPasswordToggle('toggleConfirmBtn', 'confirmPassword');
+
+    // ==========================================
+    // PASSWORD STRENGTH & MATCHING
+    // ==========================================
+    const passInput = document.getElementById('password');
+    const confirmInput = document.getElementById('confirmPassword');
+    const strengthText = document.getElementById('strengthText');
+    const matchText = document.getElementById('matchText');
+    const segs = [document.getElementById('seg1'), document.getElementById('seg2'), document.getElementById('seg3'), document.getElementById('seg4')];
+
+    passInput.addEventListener('input', () => {
+      const val = passInput.value;
+      let score = 0;
+      if (val.length >= 8) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+
+      segs.forEach(s => s.style.background = 'transparent');
+
+      if (val.length === 0) {
+        strengthText.textContent = 'Enter a password';
+        strengthText.style.color = 'var(--text-muted)';
+      } else if (score === 1) {
+        segs[0].style.background = 'var(--error)';
+        strengthText.textContent = 'Weak';
+        strengthText.style.color = 'var(--error)';
+      } else if (score === 2) {
+        segs[0].style.background = '#f59e0b';
+        segs[1].style.background = '#f59e0b';
+        strengthText.textContent = 'Fair';
+        strengthText.style.color = '#f59e0b';
+      } else if (score === 3) {
+        segs[0].style.background = 'var(--success)';
+        segs[1].style.background = 'var(--success)';
+        segs[2].style.background = 'var(--success)';
+        strengthText.textContent = 'Good';
+        strengthText.style.color = 'var(--success)';
+      } else if (score === 4) {
+        segs.forEach(s => s.style.background = 'var(--success)');
+        strengthText.textContent = 'Strong';
+        strengthText.style.color = 'var(--success)';
+      }
+
+      checkMatch();
+    });
+
+    confirmInput.addEventListener('input', checkMatch);
+
+    function checkMatch() {
+      if (confirmInput.value && passInput.value !== confirmInput.value) {
+        matchText.style.display = 'block';
+        confirmInput.style.borderColor = 'var(--error)';
+      } else {
+        matchText.style.display = 'none';
+        confirmInput.style.borderColor = 'var(--border-color)';
+      }
+    }
+
+    // ==========================================
+    // PENDING MODAL LOGIC
+    // ==========================================
+    const pendingModal = document.getElementById('pendingModal');
+    let modalTimeout;
+
+    function showPendingModal() {
+      pendingModal.classList.add('active');
+      
+      // Auto dismiss after 5 seconds
+      modalTimeout = setTimeout(() => {
+        closePendingModal();
+      }, 5000);
+    }
+
+    function closePendingModal() {
+      pendingModal.classList.remove('active');
+      clearTimeout(modalTimeout);
+    }
+
+    document.getElementById('closeModalBtn').addEventListener('click', closePendingModal);
+    document.getElementById('modalOkayBtn').addEventListener('click', closePendingModal);
+    
+    // Close on outside click
+    pendingModal.addEventListener('click', (e) => {
+      if (e.target === pendingModal) {
+        closePendingModal();
+      }
+    });
+
+    // ==========================================
+    // FIREBASE AUTHENTICATION & REGISTRATION
+    // ==========================================
+    const registerForm = document.getElementById('registerForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+
+    function setLoading(isLoading) {
+      if (isLoading) {
+        submitBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'block';
+      } else {
+        submitBtn.disabled = false;
+        btnText.style.display = 'block';
+        btnSpinner.style.display = 'none';
+      }
+    }
+
+    // Handle Email/Password Registration
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = passInput.value;
+      const confirmPassword = confirmInput.value;
+
+      // Basic Validation
+      if (!name || !email || !phone || !password || !confirmPassword) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+      }
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match.', 'error');
+        return;
+      }
+      if (password.length < 6) {
+        showToast('Password must be at least 6 characters.', 'error');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const { createUserWithEmailAndPassword, ref, set, firebaseDb } = window.firebaseAuthFunctions;
+        const auth = window.firebaseAuth;
+        const db = window.firebaseDb;
+
+        // 1. Create Auth User
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // 2. Save User Profile to Realtime Database
+        // Note: Default status is 'pending', role is 'bidder' (unless it's the CEO email, but true CEO elevation requires backend/bootstrap later)
+        const isCeoEmail = email.toLowerCase() === 'jesseegwuatu@gmail.com';
+        
+        const userProfile = {
+          uid: user.uid,
+          fullName: name,
+          email: email,
+          phone: phone,
+          role: isCeoEmail ? 'owner' : 'bidder', // Frontend indication only. Real security rules will enforce this.
+          status: isCeoEmail ? 'approved' : 'pending',
+          createdAt: new Date().toISOString(),
+          theme: localStorage.getItem('theme') || 'dark'
+        };
+
+        await set(ref(db, 'users/' + user.uid), userProfile);
+
+        // 3. Show Success & Pending Modal
+        showToast('Account created successfully!', 'success');
+        showPendingModal();
+
+        // 4. Clear Form
+        registerForm.reset();
+        segs.forEach(s => s.style.background = 'transparent');
+        strengthText.textContent = 'Enter a password';
+
+      } catch (error) {
+        console.error("Registration error:", error);
+        let msg = 'Registration failed. Please try again.';
+        if (error.code === 'auth/email-already-in-use') msg = 'This email is already registered.';
+        if (error.code === 'auth/invalid-email') msg = 'Invalid email address.';
+        if (error.code === 'auth/weak-password') msg = 'Password is too weak.';
+        showToast(msg, 'error');
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    // Handle Google Sign-In
+    document.getElementById('googleBtn').addEventListener('click', async () => {
+      try {
+        const { signInWithPopup, googleProvider, ref, set } = window.firebaseAuthFunctions;
+        const auth = window.firebaseAuth;
+        const db = window.firebaseDb;
+
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Check if user already exists in DB, if not, create a pending profile
+        // For simplicity in this phase, we attempt to write the profile. 
+        // A robust approach would read first, but for registration, we assume new.
+        const isCeoEmail = user.email.toLowerCase() === 'jesseegwuatu@gmail.com';
+        
+        const userProfile = {
+          uid: user.uid,
+          fullName: user.displayName || 'Google User',
+          email: user.email,
+          phone: user.phoneNumber || '',
+          photoURL: user.photoURL || '',
+          role: isCeoEmail ? 'owner' : 'bidder',
+          status: isCeoEmail ? 'approved' : 'pending',
+          createdAt: new Date().toISOString(),
+          theme: localStorage.getItem('theme') || 'dark'
+        };
+
+        // Note: We use `set` here which overwrites. In later phases, we'll use `update` 
+        // or backend checks to prevent overwriting existing users.
+        await set(ref(db, 'users/' + user.uid), userProfile);
+
+        showToast('Signed in with Google successfully!', 'success');
+        showPendingModal();
+
+      } catch (error) {
+        console.error("Google Auth Error:", error);
+        if (error.code !== 'auth/popup-closed-by-user') {
+          showToast('Google sign-in failed. Please try again.', 'error');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

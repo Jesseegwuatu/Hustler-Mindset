@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hustler Mindset | Super Admin</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    :root {
+      --bg-color: #f4f5f8;
+      --surface-color: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --primary: #4c1d95;
+      --primary-hover: #3b1475;
+      --accent: #d4af37;
+      --border-color: #e5e7eb;
+      --sidebar-bg: #ffffff;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --input-bg: #f9fafb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0a0a0a;
+      --surface-color: #141414;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #d4af37;
+      --primary-hover: #e5c35e;
+      --accent: #d4af37;
+      --border-color: #262626;
+      --sidebar-bg: #111111;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --input-bg: #1f1f1f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+    }
+    .sidebar-header {
+      padding: 24px;
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-header span { color: var(--accent); }
+    .nav-links {
+      flex: 1;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover { background: var(--input-bg); color: var(--text-main); }
+    .nav-item.active { background: var(--primary); color: #fff; }
+    [data-theme="dark"] .nav-item.active { color: #000; }
+    .nav-item i { font-size: 20px; }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 16px;
+    }
+    [data-theme="dark"] .avatar { color: #000; }
+    .user-info .name { font-weight: 600; font-size: 14px; }
+    .user-info .role { font-size: 12px; color: var(--text-muted); text-transform: capitalize; }
+    
+    .btn-logout {
+      width: 100%; padding: 10px; border-radius: 8px;
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      color: var(--text-main); font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      width: 100%;
+    }
+    .top-bar {
+      height: 70px;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-color);
+    }
+    .top-bar h1 { font-family: var(--font-head); font-size: 22px; }
+    .theme-toggle {
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-main); transition: all 0.2s;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    .tab-content { display: none; animation: fadeIn 0.4s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Common UI Elements */
+    .card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 24px;
+    }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+    
+    .stat-card { display: flex; flex-direction: column; gap: 10px; }
+    .stat-card h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; font-family: var(--font-head); }
+    .stat-card .subtext { font-size: 13px; color: var(--text-muted); }
+
+    .btn {
+      padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s; border: none; display: inline-flex;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    [data-theme="dark"] .btn-primary { color: #000; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: var(--input-bg); }
+    .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .btn-success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+    .btn-success:hover { background: var(--success); color: #fff; }
+    .btn-icon { padding: 8px; border-radius: 8px; }
+
+    /* Tables */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 14px; }
+    th { color: var(--text-muted); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    tr:last-child td { border-bottom: none; }
+    
+    .status-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: capitalize;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .status-approved { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .status-banned { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+    /* Forms & Inputs */
+    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .input-group label { font-size: 13px; font-weight: 500; }
+    .form-control {
+      padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--input-bg); color: var(--text-main); outline: none; font-family: var(--font-body);
+      width: 100%;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    
+    /* File Upload */
+    .file-upload-wrapper {
+      border: 2px dashed var(--border-color); border-radius: 10px;
+      padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s;
+      position: relative; background: var(--input-bg);
+    }
+    .file-upload-wrapper:hover { border-color: var(--primary); }
+    .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .file-upload-icon { font-size: 24px; color: var(--primary); margin-bottom: 8px; }
+    .file-upload-text { font-size: 13px; color: var(--text-muted); }
+
+    /* Modals & Toasts */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-content {
+      background: var(--surface-color); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 30px; max-width: 600px; width: 90%;
+      transform: translateY(20px); transition: transform 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .close-modal { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+    
+    .modal-header { font-family: var(--font-head); font-size: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast {
+      background: var(--surface-color); border-left: 4px solid var(--primary);
+      padding: 14px 20px; border-radius: 8px; box-shadow: var(--card-shadow);
+      display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500;
+      animation: slideInRight 0.3s ease forwards; pointer-events: all;
+    }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.success { border-left-color: var(--success); }
+    .toast i { font-size: 20px; }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; } }
+
+    /* Mobile Adjustments */
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; }
+    @media (max-width: 900px) {
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+      .mobile-menu-btn { display: block; }
+      .top-bar { padding: 0 20px; }
+      .content-area { padding: 20px; }
+      .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">HUSTLER <span>ADMIN</span></div>
+    <div class="nav-links">
+      <button class="nav-item active" data-tab="overview"><i class="ph ph-squares-four"></i> Overview</button>
+      <button class="nav-item" data-tab="approvals"><i class="ph ph-user-check"></i> Pending Approvals</button>
+      <button class="nav-item" data-tab="users"><i class="ph ph-users"></i> User Management</button>
+      <button class="nav-item" data-tab="assign"><i class="ph ph-user-plus"></i> Assign Profiles</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar" id="sidebarAvatar">A</div>
+        <div class="user-info">
+          <div class="name" id="sidebarName">Loading...</div>
+          <div class="role" id="sidebarRole">Super Admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logoutBtn"><i class="ph ph-sign-out"></i> Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="top-bar">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="ph ph-list"></i></button>
+        <h1 id="pageTitle">System Overview</h1>
+      </div>
+      <button class="theme-toggle" id="themeToggle"><i class="ph ph-moon" id="themeIcon"></i></button>
+    </header>
+
+    <div class="content-area">
+      
+      <!-- TAB: OVERVIEW -->
+      <section class="tab-content active" id="tab-overview">
+        <div class="grid-3">
+          <div class="card stat-card">
+            <h3>Total Users</h3>
+            <div class="value" id="statTotalUsers">0</div>
+            <div class="subtext">Bidders and Admins</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Pending Approvals</h3>
+            <div class="value" id="statPendingUsers">0</div>
+            <div class="subtext">Requires your attention</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Total Assigned Profiles</h3>
+            <div class="value" id="statTotalProfiles">0</div>
+            <div class="subtext">Across all bidders</div>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+            Weekly Financials (Mon - Sun)
+            <span style="font-size: 12px; font-weight: normal; color: var(--text-muted);">Rate: <span id="exchangeRateDisplay">Loading...</span></span>
+          </h3>
+          
+          <div class="grid-4">
+            <div class="card stat-card" style="background: var(--input-bg);">
+              <h3>Total Revenue</h3>
+              <div class="value" style="color: var(--primary);" id="statRevenueUSD">$0.00</div>
+              <div class="subtext" id="statRevenueNGN">₦0.00</div>
+            </div>
+            <div class="card stat-card" style="background: var(--input-bg);">
+              <h3>Your Profit</h3>
+              <div class="value" style="color: var(--success);" id="statProfitUSD">$0.00</div>
+              <div class="subtext" id="statProfitNGN">₦0.00</div>
+            </div>
+            <div class="card stat-card" style="background: var(--input-bg);">
+              <h3>Bidder Payouts</h3>
+              <div class="value" style="color: var(--text-main);" id="statPayoutUSD">$0.00</div>
+              <div class="subtext" id="statPayoutNGN">₦0.00</div>
+            </div>
+            <div class="card stat-card" style="background: var(--input-bg);">
+              <h3>Total Applications</h3>
+              <div class="value" id="statTotalApps">0</div>
+              <div class="subtext">Recorded this week</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3>Financial History</h3>
+            <select id="historyFilter" class="form-control" style="width: auto;">
+              <option value="week">Last 4 Weeks</option>
+              <option value="month">Last 3 Months</option>
+            </select>
+          </div>
+          <div class="table-responsive">
+            <table id="historyTable">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Applications</th>
+                  <th>Revenue (USD)</th>
+                  <th>Profit (USD)</th>
+                  <th>Profit (NGN)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No financial history available yet. Data appears once applications are recorded.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: PENDING APPROVALS -->
+      <section class="tab-content" id="tab-approvals">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">Pending User Requests</h3>
+          <div class="table-responsive">
+            <table id="pendingTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="noPending" style="text-align: center; padding: 20px; color: var(--text-muted); display: none;">
+            No pending approvals at this time.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: USER MANAGEMENT -->
+      <section class="tab-content" id="tab-users">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">All Users</h3>
+          <div class="table-responsive">
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Total Quota</th>
+                  <th>Avg. Base Rate</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: ASSIGN PROFILES -->
+      <section class="tab-content" id="tab-assign">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">Assign Client Profiles</h3>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Select a bidder to assign a new profile, or click on their profile count to manage existing ones.</p>
+          
+          <div class="table-responsive">
+            <table id="assignTable">
+              <thead>
+                <tr>
+                  <th>Bidder Name</th>
+                  <th>Email</th>
+                  <th>Assigned Profiles</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Approve User Modal -->
+  <div class="modal-overlay" id="approveModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="document.getElementById('approveModal').classList.remove('active')"><i class="ph ph-x"></i></button>
+      <h2 class="modal-header">Approve User</h2>
+      
+      <div class="input-group">
+        <label>Role</label>
+        <select id="approveRole" class="form-control">
+          <option value="bidder">Bidder</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      
+      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" id="confirmApproveBtn">Approve Account</button>
+    </div>
+  </div>
+
+  <!-- Assign Profile Modal -->
+  <div class="modal-overlay" id="assignProfileModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="document.getElementById('assignProfileModal').classList.remove('active')"><i class="ph ph-x"></i></button>
+      <h2 class="modal-header" id="assignModalTitle">Assign New Profile</h2>
+      
+      <input type="hidden" id="assignToUserId">
+      <input type="hidden" id="editProfileId">
+
+      <div class="input-group">
+        <label>Client Name</label>
+        <input type="text" id="clientName" class="form-control" placeholder="e.g. John Doe" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="file-upload-wrapper">
+          <input type="file" id="resumeFile" accept=".pdf,.doc,.docx">
+          <i class="ph ph-file-pdf file-upload-icon"></i>
+          <div class="file-upload-text" id="resumeFileName">Upload Resume (Optional)</div>
+        </div>
+        <div class="file-upload-wrapper">
+          <input type="file" id="coverFile" accept=".pdf,.doc,.docx">
+          <i class="ph ph-file-text file-upload-icon"></i>
+          <div class="file-upload-text" id="coverFileName">Upload Cover Letter (Optional)</div>
+        </div>
+      </div>
+
+      <div class="input-group" style="margin-top: 16px;">
+        <label>Profile Details / Notes</label>
+        <textarea id="profileDetails" class="form-control" rows="3" placeholder="Enter any specific instructions or notes for the bidder..."></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group">
+          <label>Initial Rate ($ / bid)</label>
+          <input type="number" step="0.01" id="initialRate" class="form-control" value="0.07">
+        </div>
+        <div class="input-group">
+          <label>Bidder Rate ($ / bid)</label>
+          <input type="number" step="0.01" id="bidderRate" class="form-control" value="0.03">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group">
+          <label>Target Quota (per day)</label>
+          <input type="number" id="profileQuota" class="form-control" value="100">
+        </div>
+        <div class="input-group">
+          <label>Profile Type</label>
+          <select id="bidType" class="form-control">
+            <option value="Normal bid">Normal bid</option>
+            <option value="Tailored bid">Tailored bid</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group" style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+        <input type="checkbox" id="weekendToggle" style="width: 18px; height: 18px; cursor: pointer;">
+        <label for="weekendToggle" style="cursor: pointer; margin-bottom: 0;">Requires Weekend Work</label>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="saveProfileBtn">
+        <span id="saveProfileText">Assign Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Manage Profiles Modal -->
+  <div class="modal-overlay" id="manageProfilesModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="document.getElementById('manageProfilesModal').classList.remove('active')"><i class="ph ph-x"></i></button>
+      <h2 class="modal-header">Profiles for <span id="manageProfilesName" style="color: var(--primary);"></span></h2>
+      
+      <div id="manageProfilesList" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Profiles injected here -->
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getDatabase, ref, get, update, push, set, remove } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyChzuGUW81BSsQWVcC8xY2DOG8pUGbRnA4",
+      authDomain: "hustler-mindset.firebaseapp.com",
+      projectId: "hustler-mindset",
+      storageBucket: "hustler-mindset.firebasestorage.app",
+      messagingSenderId: "601940489235",
+      appId: "1:601940489235:web:eddf693f98404b97cf7be6",
+      measurementId: "G-HD8VP533TY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.firebaseDBFunctions = { ref, get, update, push, set, remove, signOut };
+    window.firebaseReady = true;
+  </script>
+
+  <script>
+    // ==========================================
+    // 1. UI LOGIC
+    // ==========================================
+    const themeIcon = document.getElementById('themeIcon');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    function updateThemeIcon(theme) {
+      themeIcon.className = theme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      let icon = type === 'error' ? 'ph-warning-circle' : type === 'success' ? 'ph-check-circle' : 'ph-info';
+      toast.innerHTML = `<i class="ph ${icon}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    document.getElementById('mobileMenuBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    // Close sidebar on outside click for mobile
+    document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+          sidebar.classList.remove('open');
+        }
+      }
+    });
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const pageTitle = document.getElementById('pageTitle');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        navItems.forEach(n => n.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+        item.classList.add('active');
+        const target = item.getAttribute('data-tab');
+        document.getElementById(`tab-${target}`).classList.add('active');
+        pageTitle.textContent = item.textContent.trim();
+        document.getElementById('sidebar').classList.remove('open');
+      });
+    });
+
+    // Close Modals on outside click
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+      });
+    });
+
+    // ==========================================
+    // 2. DATA LOGIC
+    // ==========================================
+    let currentUser = null;
+    let allUsersData = {};
+    let allProfilesData = {};
+    let pendingUserIdToApprove = null;
+    let assignToUserId = null;
+    let currentExchangeRate = 1500;
+
+    setTimeout(() => {
+      if (!window.firebaseReady) return;
+
+      const auth = window.firebaseAuth;
+      const db = window.firebaseDb;
+      const { ref, get, update, push, set, remove, signOut } = window.firebaseDBFunctions;
+
+      // Fetch Exchange Rate
+      fetch('https://open.er-api.com/v6/latest/USD')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.rates && data.rates.NGN) {
+            currentExchangeRate = data.rates.NGN;
+            document.getElementById('exchangeRateDisplay').textContent = `1 USD = ₦${currentExchangeRate.toFixed(2)}`;
+          }
+        }).catch(console.error);
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        currentUser = user;
+
+        try {
+          const snapshot = await get(ref(db, 'users/' + user.uid));
+          if (snapshot.exists()) {
+            const userData = snapshot.val();
+            
+            // Security Check
+            if (userData.email !== 'jesseegwuatu@gmail.com' && userData.role !== 'owner') {
+               showToast('Access Denied. Super Admin only.', 'error');
+               setTimeout(() => window.location.href = 'hustlermindset.html', 2000);
+               return;
+            }
+
+            document.getElementById('sidebarName').textContent = userData.fullName;
+            document.getElementById('sidebarRole').textContent = userData.role;
+            
+            loadDashboardData();
+
+          } else {
+            showToast('User profile not found.', 'error');
+          }
+        } catch (err) {
+          console.error("Auth error:", err);
+        }
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      });
+
+      async function loadDashboardData() {
+        const usersSnap = await get(ref(db, 'users'));
+        if (usersSnap.exists()) allUsersData = usersSnap.val();
+
+        const profilesSnap = await get(ref(db, 'profiles'));
+        if (profilesSnap.exists()) allProfilesData = profilesSnap.val();
+
+        const appsSnap = await get(ref(db, 'applications'));
+        let allAppsData = {};
+        if (appsSnap.exists()) allAppsData = appsSnap.val();
+
+        processData(allAppsData);
+      }
+
+      function processData(allApps) {
+        let pendingCount = 0;
+        let totalUsers = 0;
+        let totalProfiles = 0;
+        
+        let weekRevenue = 0;
+        let weekProfit = 0;
+        let weekPayout = 0;
+        let weekAppsCount = 0;
+
+        // Calculate Weekly Financials
+        Object.keys(allApps).forEach(appId => {
+          const app = allApps[appId];
+          // In a real scenario, filter by current week. For now, sum all for demo.
+          weekAppsCount += 1;
+          weekRevenue += parseFloat(app.initialRate || 0);
+          weekPayout += parseFloat(app.bidderRate || 0);
+          weekProfit += (parseFloat(app.initialRate || 0) - parseFloat(app.bidderRate || 0));
+        });
+
+        document.getElementById('statRevenueUSD').textContent = `$${weekRevenue.toFixed(2)}`;
+        document.getElementById('statRevenueNGN').textContent = `₦${(weekRevenue * currentExchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        
+        document.getElementById('statProfitUSD').textContent = `$${weekProfit.toFixed(2)}`;
+        document.getElementById('statProfitNGN').textContent = `₦${(weekProfit * currentExchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        
+        document.getElementById('statPayoutUSD').textContent = `$${weekPayout.toFixed(2)}`;
+        document.getElementById('statPayoutNGN').textContent = `₦${(weekPayout * currentExchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+        
+        document.getElementById('statTotalApps').textContent = weekAppsCount;
+
+        // User Tables
+        const pendingTable = document.getElementById('pendingTable').querySelector('tbody');
+        const usersTable = document.getElementById('usersTable').querySelector('tbody');
+        const assignTable = document.getElementById('assignTable').querySelector('tbody');
+        
+        pendingTable.innerHTML = '';
+        usersTable.innerHTML = '';
+        assignTable.innerHTML = '';
+
+        // Pre-calculate profile stats per user
+        let userProfileStats = {};
+        Object.keys(allProfilesData).forEach(pid => {
+          const p = allProfilesData[pid];
+          if (!userProfileStats[p.assignedTo]) {
+            userProfileStats[p.assignedTo] = { count: 0, totalQuota: 0, totalProfitRate: 0 };
+          }
+          userProfileStats[p.assignedTo].count += 1;
+          userProfileStats[p.assignedTo].totalQuota += parseInt(p.quota || 0);
+          userProfileStats[p.assignedTo].totalProfitRate += (parseFloat(p.initialRate || 0) - parseFloat(p.bidderRate || 0));
+        });
+
+        Object.keys(allUsersData).forEach(uid => {
+          const u = allUsersData[uid];
+          totalUsers++;
+          
+          if (u.status === 'pending') {
+            pendingCount++;
+            pendingTable.innerHTML += `
+              <tr>
+                <td>${u.fullName}</td>
+                <td>${u.email}</td>
+                <td>${u.phone || 'N/A'}</td>
+                <td><span class="status-badge status-pending">Pending</span></td>
+                <td><button class="btn btn-success" onclick="openApproveModal('${uid}')">Review</button></td>
+              </tr>
+            `;
+          }
+
+          // Calculate User Stats
+          const isOwner = u.email === 'jesseegwuatu@gmail.com' || u.role === 'owner';
+          let displayQuota = 0;
+          let displayRate = 0;
+
+          if (isOwner) {
+            // CEO sees accumulated stats of all profiles
+            Object.values(userProfileStats).forEach(stat => {
+              displayQuota += stat.totalQuota;
+              displayRate += stat.totalProfitRate; // CEO's true rate is the profit rate
+            });
+          } else {
+            // Bidders see their own assigned quotas
+            displayQuota = userProfileStats[uid] ? userProfileStats[uid].totalQuota : 0;
+            displayRate = u.baseRate || 0;
+          }
+
+          usersTable.innerHTML += `
+            <tr>
+              <td>${u.fullName}</td>
+              <td style="text-transform: capitalize;">${u.role}</td>
+              <td><span class="status-badge status-${u.status || 'pending'}">${u.status || 'pending'}</span></td>
+              <td>${displayQuota}</td>
+              <td>$${parseFloat(displayRate).toFixed(2)}</td>
+              <td>
+                ${isOwner ? '<em style="color: var(--text-muted);">Protected</em>' : `
+                  <button class="btn btn-outline" onclick="toggleBan('${uid}', '${u.status}')">
+                    ${u.status === 'banned' ? 'Unban' : 'Ban'}
+                  </button>
+                `}
+              </td>
+            </tr>
+          `;
+
+          if (u.role === 'bidder' && u.status === 'approved') {
+            const pCount = userProfileStats[uid] ? userProfileStats[uid].count : 0;
+            assignTable.innerHTML += `
+              <tr>
+                <td>${u.fullName}</td>
+                <td>${u.email}</td>
+                <td>
+                  <button class="btn btn-outline" onclick="openManageProfiles('${uid}', '${u.fullName}')">
+                    <i class="ph ph-briefcase"></i> ${pCount} Profiles
+                  </button>
+                </td>
+                <td>
+                  <button class="btn btn-primary" onclick="openAssignModal('${uid}', '${u.fullName}')">
+                    <i class="ph ph-plus"></i> New
+                  </button>
+                </td>
+              </tr>
+            `;
+          }
+        });
+
+        document.getElementById('statTotalUsers').textContent = totalUsers;
+        document.getElementById('statPendingUsers').textContent = pendingCount;
+        document.getElementById('statTotalProfiles').textContent = Object.keys(allProfilesData).length;
+        document.getElementById('noPending').style.display = pendingCount === 0 ? 'block' : 'none';
+      }
+
+      // --- ACTIONS ---
+
+      window.openApproveModal = function(uid) {
+        pendingUserIdToApprove = uid;
+        document.getElementById('approveModal').classList.add('active');
+      }
+
+      document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
+        if (!pendingUserIdToApprove) return;
+        const role = document.getElementById('approveRole').value;
+        try {
+          await update(ref(db, 'users/' + pendingUserIdToApprove), {
+            status: 'approved',
+            role: role
+          });
+          showToast('User approved successfully!', 'success');
+          document.getElementById('approveModal').classList.remove('active');
+          loadDashboardData();
+        } catch (err) {
+          showToast('Failed to approve user.', 'error');
+        }
+      });
+
+      window.toggleBan = async function(uid, currentStatus) {
+        const newStatus = currentStatus === 'banned' ? 'approved' : 'banned';
+        try {
+          await update(ref(db, 'users/' + uid), { status: newStatus });
+          showToast(`User status changed to ${newStatus}.`, 'success');
+          loadDashboardData();
+        } catch (err) {
+          showToast('Failed to update status.', 'error');
+        }
+      }
+
+      // --- PROFILE MANAGEMENT ---
+
+      window.openManageProfiles = function(uid, name) {
+        document.getElementById('manageProfilesName').textContent = name;
+        const listEl = document.getElementById('manageProfilesList');
+        listEl.innerHTML = '';
+
+        const userProfiles = Object.keys(allProfilesData).filter(k => allProfilesData[k].assignedTo === uid);
+        
+        if (userProfiles.length === 0) {
+          listEl.innerHTML = `<p style="color: var(--text-muted);">No profiles assigned yet.</p>`;
+        } else {
+          userProfiles.forEach(pid => {
+            const p = allProfilesData[pid];
+            listEl.innerHTML += `
+              <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h4 style="margin-bottom: 4px;">${p.clientName}</h4>
+                  <div style="font-size: 12px; color: var(--text-muted);">
+                    Quota: ${p.quota}/day | Bidder Rate: $${p.bidderRate} | Type: ${p.bidType}
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-outline btn-icon" onclick="editProfile('${pid}')"><i class="ph ph-pencil-simple"></i></button>
+                  <button class="btn btn-danger btn-icon" onclick="deleteProfile('${pid}')"><i class="ph ph-trash"></i></button>
+                </div>
+              </div>
+            `;
+          });
+        }
+        document.getElementById('manageProfilesModal').classList.add('active');
+      }
+
+      window.editProfile = function(pid) {
+        const p = allProfilesData[pid];
+        if (!p) return;
+
+        document.getElementById('editProfileId').value = pid;
+        document.getElementById('assignToUserId').value = p.assignedTo;
+        document.getElementById('clientName').value = p.clientName;
+        document.getElementById('profileDetails').value = p.details || '';
+        document.getElementById('initialRate').value = p.initialRate;
+        document.getElementById('bidderRate').value = p.bidderRate;
+        document.getElementById('profileQuota').value = p.quota;
+        document.getElementById('bidType').value = p.bidType;
+        document.getElementById('weekendToggle').checked = p.weekend || false;
+        
+        document.getElementById('assignModalTitle').textContent = "Edit Profile: " + p.clientName;
+        document.getElementById('saveProfileText').textContent = "Update Profile";
+        
+        document.getElementById('manageProfilesModal').classList.remove('active');
+        document.getElementById('assignProfileModal').classList.add('active');
+      }
+
+      window.deleteProfile = async function(pid) {
+        if (confirm("Are you sure you want to delete this profile? This cannot be undone.")) {
+          try {
+            await remove(ref(db, 'profiles/' + pid));
+            showToast('Profile deleted.', 'success');
+            document.getElementById('manageProfilesModal').classList.remove('active');
+            loadDashboardData();
+          } catch (err) {
+            showToast('Failed to delete profile.', 'error');
+          }
+        }
+      }
+
+      window.openAssignModal = function(uid, name) {
+        // Reset form for new assignment
+        document.getElementById('assignModalTitle').textContent = "Assign New Profile";
+        document.getElementById('saveProfileText').textContent = "Assign Profile";
+        document.getElementById('editProfileId').value = "";
+        document.getElementById('assignToUserId').value = uid;
+        document.getElementById('clientName').value = "";
+        document.getElementById('profileDetails').value = "";
+        document.getElementById('resumeFileName').textContent = "Upload Resume (Optional)";
+        document.getElementById('coverFileName').textContent = "Upload Cover Letter (Optional)";
+        
+        document.getElementById('assignProfileModal').classList.add('active');
+      }
+
+      // File Uploads to Cloudinary
+      document.getElementById('resumeFile').addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+          document.getElementById('resumeFileName').textContent = e.target.files[0].name;
+          document.getElementById('resumeFileName').style.color = 'var(--success)';
+        }
+      });
+      document.getElementById('coverFile').addEventListener('change', (e) => {
+        if (e.target.files[0]) {
+          document.getElementById('coverFileName').textContent = e.target.files[0].name;
+          document.getElementById('coverFileName').style.color = 'var(--success)';
+        }
+      });
+
+      async function uploadToCloudinary(file) {
+        const cloudName = "dsyr5ejvh";
+        const uploadPreset = "hustlermindset";
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        return data.secure_url;
+      }
+
+      document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const editPid = document.getElementById('editProfileId').value;
+        const uid = document.getElementById('assignToUserId').value;
+        const clientName = document.getElementById('clientName').value;
+        const details = document.getElementById('profileDetails').value;
+        const initialRate = document.getElementById('initialRate').value;
+        const bidderRate = document.getElementById('bidderRate').value;
+        const quota = document.getElementById('profileQuota').value;
+        const bidType = document.getElementById('bidType').value;
+        const weekend = document.getElementById('weekendToggle').checked;
+
+        if (!clientName || !initialRate || !bidderRate || !quota) {
+          showToast('Please fill all required fields.', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('saveProfileBtn');
+        const btnText = document.getElementById('saveProfileText');
+        btn.disabled = true;
+        btnText.textContent = "Processing...";
+
+        try {
+          let resumeUrl = null;
+          let coverUrl = null;
+
+          const resumeFile = document.getElementById('resumeFile').files[0];
+          const coverFile = document.getElementById('coverFile').files[0];
+
+          if (resumeFile) {
+            btnText.textContent = "Uploading Resume...";
+            resumeUrl = await uploadToCloudinary(resumeFile);
+          }
+          if (coverFile) {
+            btnText.textContent = "Uploading Cover Letter...";
+            coverUrl = await uploadToCloudinary(coverFile);
+          }
+
+          btnText.textContent = "Saving...";
+
+          const profileData = {
+            assignedTo: uid,
+            clientName,
+            details,
+            initialRate,
+            bidderRate,
+            quota,
+            bidType,
+            weekend,
+            updatedAt: new Date().toISOString()
+          };
+
+          if (resumeUrl) profileData.resumeUrl = resumeUrl;
+          if (coverUrl) profileData.coverUrl = coverUrl;
+
+          if (editPid) {
+            // Update existing
+            await update(ref(db, 'profiles/' + editPid), profileData);
+            showToast('Profile updated successfully!', 'success');
+          } else {
+            // Create new
+            profileData.createdAt = new Date().toISOString();
+            const newProfileRef = push(ref(db, 'profiles'));
+            await set(newProfileRef, profileData);
+            showToast('Profile assigned successfully!', 'success');
+          }
+
+          document.getElementById('assignProfileModal').classList.remove('active');
+          loadDashboardData();
+
+        } catch (err) {
+          console.error(err);
+          showToast('Error saving profile.', 'error');
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = editPid ? "Update Profile" : "Assign Profile";
+        }
+      });
+
+    }, 500);
+  </script>
+</body>
+</html>

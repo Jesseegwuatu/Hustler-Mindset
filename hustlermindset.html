@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Hustler Mindset | Dashboard</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+  
+  <!-- jsPDF for PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+    import { getDatabase, ref, get, push, set } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyChzuGUW81BSsQWVcC8xY2DOG8pUGbRnA4",
+      authDomain: "hustler-mindset.firebaseapp.com",
+      projectId: "hustler-mindset",
+      storageBucket: "hustler-mindset.firebasestorage.app",
+      messagingSenderId: "601940489235",
+      appId: "1:601940489235:web:eddf693f98404b97cf7be6",
+      measurementId: "G-HD8VP533TY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    window.firebaseAuth = auth;
+    window.firebaseDb = db;
+    window.firebaseDBFunctions = { ref, get, push, set, signOut };
+    window.firebaseReady = true;
+  </script>
+
+  <style>
+    :root {
+      --bg-color: #f4f5f8;
+      --surface-color: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --primary: #4c1d95;
+      --primary-hover: #3b1475;
+      --accent: #d4af37;
+      --border-color: #e5e7eb;
+      --sidebar-bg: #ffffff;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      --font-head: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --input-bg: #f9fafb;
+      --danger: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0a0a0a;
+      --surface-color: #141414;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #d4af37;
+      --primary-hover: #e5c35e;
+      --accent: #d4af37;
+      --border-color: #262626;
+      --sidebar-bg: #111111;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --input-bg: #1f1f1f;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background-color: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1000;
+    }
+    .sidebar-header {
+      padding: 24px;
+      font-family: var(--font-head);
+      font-size: 20px;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-header span { color: var(--accent); }
+    .nav-links {
+      flex: 1;
+      padding: 20px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover { background: var(--input-bg); color: var(--text-main); }
+    .nav-item.active { background: var(--primary); color: #fff; }
+    [data-theme="dark"] .nav-item.active { color: #000; }
+    .nav-item i { font-size: 20px; }
+
+    .sidebar-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 16px;
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-info .name { font-weight: 600; font-size: 14px; }
+    .user-info .role { font-size: 12px; color: var(--text-muted); text-transform: capitalize; }
+    
+    .btn-logout {
+      width: 100%; padding: 10px; border-radius: 8px;
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      color: var(--text-main); font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      width: 100%;
+    }
+    .top-bar {
+      height: 70px;
+      padding: 0 30px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface-color);
+    }
+    .top-bar h1 { font-family: var(--font-head); font-size: 22px; }
+    .theme-toggle {
+      background: var(--input-bg); border: 1px solid var(--border-color);
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-main); transition: all 0.2s;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+    .tab-content { display: none; animation: fadeIn 0.4s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Common UI Elements */
+    .card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 24px;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    
+    .stat-card { display: flex; flex-direction: column; gap: 10px; }
+    .stat-card h3 { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; font-family: var(--font-head); }
+    .stat-card .subtext { font-size: 13px; color: var(--text-muted); }
+
+    .btn {
+      padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all 0.2s; border: none; display: inline-flex;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    [data-theme="dark"] .btn-primary { color: #000; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: var(--input-bg); }
+    
+    /* Forms & Inputs */
+    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .input-group label { font-size: 13px; font-weight: 500; }
+    .form-control {
+      padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--input-bg); color: var(--text-main); outline: none; font-family: var(--font-body);
+    }
+    .form-control:focus { border-color: var(--primary); }
+
+    /* Job Board */
+    .job-filters {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .job-list { display: flex; flex-direction: column; gap: 16px; }
+    .job-card {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px; border: 1px solid var(--border-color); border-radius: 12px;
+      background: var(--surface-color); transition: border-color 0.2s;
+    }
+    .job-card:hover { border-color: var(--primary); }
+    .job-info h4 { font-size: 16px; margin-bottom: 4px; font-weight: 600; }
+    .job-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;}
+    .job-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      background: var(--input-bg); padding: 4px 10px; border-radius: 6px;
+      font-size: 12px; color: var(--text-muted); border: 1px solid var(--border-color);
+    }
+    .job-actions { display: flex; gap: 10px; }
+    
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .page-btn {
+      padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--surface-color); color: var(--text-main); cursor: pointer;
+    }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    [data-theme="dark"] .page-btn.active { color: #000; }
+
+    /* Vortex AI Chat */
+    .vortex-container {
+      display: flex; flex-direction: column; height: calc(100vh - 150px);
+      background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 16px;
+      overflow: hidden;
+    }
+    .vortex-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+      background: rgba(212, 175, 55, 0.05);
+    }
+    .vortex-title { font-family: var(--font-head); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .vortex-chat-area {
+      flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+    }
+    .message { display: flex; gap: 12px; max-width: 85%; }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .msg-bubble {
+      padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5;
+    }
+    .message.user .msg-bubble { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    [data-theme="dark"] .message.user .msg-bubble { color: #000; }
+    .message.ai .msg-bubble { background: var(--input-bg); border-bottom-left-radius: 4px; border: 1px solid var(--border-color); }
+    
+    .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 12px 16px; }
+    .typing-dot { width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+    .vortex-input-area {
+      padding: 16px; border-top: 1px solid var(--border-color); display: flex; gap: 10px;
+    }
+    .vortex-input {
+      flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border-color);
+      background: var(--input-bg); color: var(--text-main); outline: none; font-family: var(--font-body);
+    }
+    .btn-send {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff;
+      border: none; display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    [data-theme="dark"] .btn-send { color: #000; }
+    .btn-send:hover { background: var(--primary-hover); }
+
+    /* Modals & Toasts */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-content {
+      background: var(--surface-color); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 30px; max-width: 500px; width: 90%;
+      transform: translateY(20px); transition: transform 0.3s ease;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2); position: relative;
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .close-modal { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; }
+
+    /* PDF Template Styles */
+    .pdf-template {
+      padding: 40px;
+      background: #fff;
+      color: #000;
+      font-family: 'Inter', sans-serif;
+      width: 800px; 
+      position: absolute;
+      left: -9999px; /* Hidden offscreen */
+    }
+    .pdf-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #d4af37; padding-bottom: 20px; }
+    .pdf-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 5px; font-family: 'Outfit', sans-serif; color: #000;}
+    .pdf-header p { font-size: 14px; color: #555; }
+    .pdf-details { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 14px; }
+    .pdf-details div { line-height: 1.6; }
+    .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .pdf-table th, .pdf-table td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; font-size: 14px; color: #000;}
+    .pdf-table th { font-weight: 600; color: #555; background: #fafafa; }
+    .pdf-table td.amount { font-weight: 600; }
+    .pdf-footer { text-align: center; font-size: 12px; color: #777; margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; }
+
+    #toast-container { position: fixed; top: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast {
+      background: var(--surface-color); border-left: 4px solid var(--primary);
+      padding: 14px 20px; border-radius: 8px; box-shadow: var(--card-shadow);
+      display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500;
+      animation: slideInRight 0.3s ease forwards; pointer-events: all;
+    }
+    .toast.error { border-left-color: var(--danger); }
+    .toast.success { border-left-color: var(--success); }
+    .toast i { font-size: 20px; }
+    @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes fadeOut { to { opacity: 0; } }
+
+    /* Loader */
+    .loader { border: 3px solid var(--input-bg); border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 40px auto; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Mobile Adjustments */
+    .mobile-menu-btn { display: none; background: none; border: none; color: var(--text-main); font-size: 24px; cursor: pointer; }
+    @media (max-width: 900px) {
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+      .mobile-menu-btn { display: block; }
+      .top-bar { padding: 0 20px; }
+      .content-area { padding: 20px; }
+      .job-filters { grid-template-columns: 1fr; }
+      .job-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .job-actions { width: 100%; }
+      .job-actions button { flex: 1; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">HUSTLER <span>MINDSET</span></div>
+    <div class="nav-links">
+      <button class="nav-item active" data-tab="overview"><i class="ph ph-squares-four"></i> Overview</button>
+      <button class="nav-item" data-tab="jobs"><i class="ph ph-briefcase"></i> Job Board</button>
+      <button class="nav-item" data-tab="profiles"><i class="ph ph-user-list"></i> My Profiles</button>
+      <button class="nav-item" data-tab="vortex"><i class="ph ph-sparkle"></i> Vortex AI</button>
+      <button class="nav-item" data-tab="reports"><i class="ph ph-file-text"></i> Daily Reports</button>
+      <button class="nav-item" data-tab="applications"><i class="ph ph-paper-plane-tilt"></i> My Applications</button>
+      <button class="nav-item" data-tab="earnings"><i class="ph ph-wallet"></i> Earnings</button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="avatar" id="sidebarAvatar">U</div>
+        <div class="user-info">
+          <div class="name" id="sidebarName">Loading...</div>
+          <div class="role" id="sidebarRole">Bidder</div>
+        </div>
+      </div>
+      <button class="btn-logout" id="logoutBtn"><i class="ph ph-sign-out"></i> Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="top-bar">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="ph ph-list"></i></button>
+        <h1 id="pageTitle">Overview</h1>
+      </div>
+      <button class="theme-toggle" id="themeToggle"><i class="ph ph-moon" id="themeIcon"></i></button>
+    </header>
+
+    <div class="content-area">
+      
+      <!-- TAB: OVERVIEW -->
+      <section class="tab-content active" id="tab-overview">
+        <div class="grid-3">
+          <div class="card stat-card">
+            <h3>Weekly Earnings</h3>
+            <div class="value" id="overviewEarnings">$0.00</div>
+            <div class="subtext" id="overviewNaira">₦0.00</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Daily Quota Progress</h3>
+            <div class="value" id="overviewQuota">0 / 0</div>
+            <div class="subtext">Applications today</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Total Applications</h3>
+            <div class="value" id="overviewTotalApps">0</div>
+            <div class="subtext">All time</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 16px;">Recent Activity</h3>
+          <div id="recentActivityList" style="color: var(--text-muted); font-size: 14px;">
+            No recent activity found.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: JOB BOARD -->
+      <section class="tab-content" id="tab-jobs">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <p style="color: var(--text-muted); font-size: 14px;">Strictly Remote & Full-Time Tech Jobs (100+ per page).</p>
+          <button class="btn btn-outline" id="downloadJobsBtn"><i class="ph ph-download-simple"></i> Export to Excel</button>
+        </div>
+
+        <div class="job-filters">
+          <input type="text" id="jobSearch" class="form-control" placeholder="Search role, company or tech...">
+          
+          <select id="filterRegion" class="form-control">
+            <option value="all">Any Region</option>
+            <option value="usa">USA Jobs</option>
+            <option value="latam">LATAM Jobs</option>
+            <option value="eu">EU Jobs</option>
+          </select>
+          
+          <select id="filterRole" class="form-control" multiple size="1" style="display:none;"></select>
+          <div class="multiselect" id="roleMultiselect" style="position:relative;">
+            <div class="form-control" onclick="toggleDropdown('roleDropdown')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+              <span id="roleLabel">Any Role</span>
+              <i class="ph ph-caret-down"></i>
+            </div>
+            <div id="roleDropdown" class="dropdown-content" style="display:none; position:absolute; background:var(--surface-color); border:1px solid var(--border-color); width:100%; z-index:10; max-height:200px; overflow-y:auto; border-radius:8px; margin-top:4px;">
+              <label style="display:block; padding:8px;"><input type="checkbox" value="software engineer" class="role-filter"> Software Engineer</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="frontend" class="role-filter"> Frontend</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="backend" class="role-filter"> Backend</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="fullstack" class="role-filter"> Fullstack</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="data" class="role-filter"> Data / AI</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="devops" class="role-filter"> DevOps</label>
+            </div>
+          </div>
+
+          <select id="filterTech" class="form-control" multiple size="1" style="display:none;"></select>
+          <div class="multiselect" id="techMultiselect" style="position:relative;">
+            <div class="form-control" onclick="toggleDropdown('techDropdown')" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;">
+              <span id="techLabel">Any Tech Stack</span>
+              <i class="ph ph-caret-down"></i>
+            </div>
+            <div id="techDropdown" class="dropdown-content" style="display:none; position:absolute; background:var(--surface-color); border:1px solid var(--border-color); width:100%; z-index:10; max-height:200px; overflow-y:auto; border-radius:8px; margin-top:4px;">
+              <label style="display:block; padding:8px;"><input type="checkbox" value="react" class="tech-filter"> React</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="python" class="tech-filter"> Python</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="node" class="tech-filter"> Node.js</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="java" class="tech-filter"> Java</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="go" class="tech-filter"> Go</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="aws" class="tech-filter"> AWS</label>
+              <label style="display:block; padding:8px;"><input type="checkbox" value="docker" class="tech-filter"> Docker</label>
+            </div>
+          </div>
+
+          <select id="filterDate" class="form-control">
+            <option value="all">Any Time</option>
+            <option value="24h">Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="14d">Last 14 Days</option>
+          </select>
+        </div>
+
+        <div id="jobBoardLoader" class="loader" style="display: none;"></div>
+        <div class="job-list" id="jobList"></div>
+        
+        <div class="pagination" id="pagination"></div>
+      </section>
+
+      <!-- TAB: MY PROFILES -->
+      <section class="tab-content" id="tab-profiles">
+        <div class="grid-2" id="profilesGrid"></div>
+        <div id="emptyProfiles" style="display: none; text-align: center; padding: 40px; color: var(--text-muted);">
+          <i class="ph ph-user-list" style="font-size: 48px; margin-bottom: 16px;"></i>
+          <h3>No Profiles Assigned</h3>
+          <p>You currently have no client profiles assigned to you.</p>
+        </div>
+      </section>
+
+      <!-- TAB: VORTEX AI -->
+      <section class="tab-content" id="tab-vortex">
+        <div class="vortex-container">
+          <div class="vortex-header">
+            <div class="vortex-title"><i class="ph ph-sparkle" style="color: var(--accent);"></i> Vortex AI Autopilot</div>
+            <select id="vortexProfileSelect" class="form-control" style="width: auto; padding: 6px 12px; font-size: 13px;">
+              <option value="">Select a Profile first</option>
+            </select>
+          </div>
+          <div class="vortex-chat-area" id="chatArea">
+            <div class="message ai">
+              <div class="msg-bubble">Hello! I am Vortex AI. Select one of your assigned profiles above, and I will help you answer application questions based strictly on that client's resume and details.</div>
+            </div>
+          </div>
+          <div class="vortex-input-area">
+            <input type="text" id="chatInput" class="vortex-input" placeholder="Type your application question here..." disabled>
+            <button class="btn-send" id="sendChatBtn" disabled><i class="ph ph-paper-plane-right"></i></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: DAILY REPORTS -->
+      <section class="tab-content" id="tab-reports">
+        <div class="grid-2">
+          <div class="card">
+            <h3 style="margin-bottom: 16px;">Submit Daily Report</h3>
+            <div class="input-group">
+              <label>Select Profile</label>
+              <select id="reportProfile" class="form-control">
+                <option value="">Select a Profile...</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Applications Completed Today</label>
+              <input type="number" id="reportAppsCount" class="form-control" placeholder="e.g. 50">
+            </div>
+            <div class="input-group">
+              <label>Notes / Challenges</label>
+              <textarea id="reportNotes" class="form-control" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" id="submitReportBtn" style="width: 100%;">Submit Report</button>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom: 16px;">My Reports History</h3>
+            <div id="reportsHistoryList" style="color: var(--text-muted); font-size: 14px;">
+              No reports submitted yet.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: MY APPLICATIONS -->
+      <section class="tab-content" id="tab-applications">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">Application History</h3>
+          <div id="applicationsList" style="color: var(--text-muted); font-size: 14px;">
+            No applications recorded yet.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: EARNINGS -->
+      <section class="tab-content" id="tab-earnings">
+        <div class="grid-2">
+          <div class="card stat-card">
+            <h3>Current Wallet Balance (USD)</h3>
+            <div class="value" id="walletUSD">$0.00</div>
+            <div class="subtext">Next payout: Pending</div>
+          </div>
+          <div class="card stat-card">
+            <h3>Naira Equivalent</h3>
+            <div class="value" id="walletNGN">₦0.00</div>
+            <div class="subtext" id="exchangeRateText">Rate: Checking...</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 16px;">Weekly Reports</h3>
+          <div id="weeklyReportsList">
+            <p style="color: var(--text-muted); font-size: 14px;">No weekly reports generated yet. Submit daily reports to build your weekly ledger.</p>
+          </div>
+          <button class="btn btn-primary" style="margin-top: 16px;" id="openBankDetailsBtn"><i class="ph ph-file-pdf"></i> Download Current Week PDF</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Profile View Modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="document.getElementById('profileModal').classList.remove('active')"><i class="ph ph-x"></i></button>
+      <h2 style="font-family: var(--font-head); margin-bottom: 20px;" id="modalClientName">Client Name</h2>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+          <span style="color: var(--text-muted);">Bid Type:</span>
+          <span id="modalBidType" style="font-weight: 600;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+          <span style="color: var(--text-muted);">Your Rate:</span>
+          <span id="modalRate" style="font-weight: 600; color: var(--success);">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+          <span style="color: var(--text-muted);">Target Quota:</span>
+          <span id="modalQuota" style="font-weight: 600;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+          <span style="color: var(--text-muted);">Weekend Profile:</span>
+          <span id="modalWeekend" style="font-weight: 600;">-</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--text-muted);">Profile Details / Notes</h4>
+        <div style="background: var(--input-bg); padding: 12px; border-radius: 8px; font-size: 13px; line-height: 1.5; max-height: 150px; overflow-y: auto;" id="modalDetails">
+          No details provided.
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 10px;">
+        <button class="btn btn-primary" style="flex: 1;" id="downloadResumeBtn"><i class="ph ph-download-simple"></i> Resume</button>
+        <button class="btn btn-outline" style="flex: 1;" id="downloadCoverBtn"><i class="ph ph-file-text"></i> Cover Letter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bank Details Modal -->
+  <div class="modal-overlay" id="bankDetailsModal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="document.getElementById('bankDetailsModal').classList.remove('active')"><i class="ph ph-x"></i></button>
+      <h2 style="font-family: var(--font-head); margin-bottom: 20px;">Payment Details</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Please provide your bank details to generate the weekly report.</p>
+      
+      <div class="input-group">
+        <label>Bank Name</label>
+        <input type="text" id="bankName" class="form-control" placeholder="e.g. Opay, GTBank">
+      </div>
+      <div class="input-group">
+        <label>Account Number</label>
+        <input type="text" id="accountNumber" class="form-control" placeholder="10 digits">
+      </div>
+      <div class="input-group">
+        <label>Account Holder Name</label>
+        <input type="text" id="accountHolder" class="form-control" placeholder="Your full name">
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%;" id="confirmDownloadPdfBtn">
+        <span id="pdfBtnText">Generate & Download PDF</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden PDF Template -->
+  <div id="pdfTemplate" class="pdf-template">
+    <div class="pdf-header">
+      <h1>HUSTLER MINDSET</h1>
+      <p>Weekly Payment Report</p>
+    </div>
+    
+    <div class="pdf-details">
+      <div>
+        <strong>Name:</strong> <span id="pdfName">-</span><br>
+        <strong>Period:</strong> <span id="pdfPeriod">-</span><br>
+        <strong>Reference:</strong> <span id="pdfRef">-</span>
+      </div>
+      <div style="text-align: right;">
+        <strong>Status:</strong> <span style="color: #ef4444; font-weight: 700;">PENDING</span><br>
+        <strong>Generated:</strong> <span id="pdfDate">-</span>
+      </div>
+    </div>
+
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th style="text-align: right;">Amount (USD)</th>
+          <th style="text-align: right;">Amount (NGN)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Total Valid Applications</td>
+          <td class="amount" style="text-align: right;" id="pdfApps">0</td>
+          <td style="text-align: right;">-</td>
+        </tr>
+        <tr>
+          <td>Gross Earnings</td>
+          <td class="amount" style="text-align: right;" id="pdfGrossUSD">$0.00</td>
+          <td style="text-align: right;" id="pdfGrossNGN">₦0.00</td>
+        </tr>
+        <tr>
+          <td>Deductions</td>
+          <td class="amount" style="text-align: right; color: #ef4444;">-$0.00</td>
+          <td style="text-align: right; color: #ef4444;">-₦0.00</td>
+        </tr>
+        <tr style="background: #fdfbf7;">
+          <td style="font-weight: 700; color: #000;">NET PAYABLE</td>
+          <td class="amount" style="text-align: right; font-size: 16px; color: #000;" id="pdfNetUSD">$0.00</td>
+          <td class="amount" style="text-align: right; font-size: 16px; color: #000;" id="pdfNetNGN">₦0.00</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="background: #fafafa; padding: 15px; border-radius: 8px; font-size: 14px; border: 1px solid #eee;">
+      <h4 style="margin-bottom: 8px; color: #555;">Payment Destination</h4>
+      <strong>Bank:</strong> <span id="pdfBank">-</span><br>
+      <strong>Account Name:</strong> <span id="pdfAccountName">-</span><br>
+      <strong>Account Number:</strong> <span id="pdfAccountNum">-</span>
+    </div>
+
+    <div class="pdf-footer">
+      <p>This is a system-generated document from Hustler Mindset Ecosystem.</p>
+      <p>&copy; 2026 Hustler Mindset. All rights reserved.</p>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    // ==========================================
+    // 1. UI LOGIC
+    // ==========================================
+    const themeIcon = document.getElementById('themeIcon');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      const newTheme = theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeIcon(newTheme);
+    });
+
+    function updateThemeIcon(theme) {
+      themeIcon.className = theme === 'dark' ? 'ph ph-sun' : 'ph ph-moon';
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      let icon = type === 'error' ? 'ph-warning-circle' : type === 'success' ? 'ph-check-circle' : 'ph-info';
+      toast.innerHTML = `<i class="ph ${icon}"></i> <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    document.getElementById('mobileMenuBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('sidebar').classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sidebar');
+      const menuBtn = document.getElementById('mobileMenuBtn');
+      if (window.innerWidth <= 900 && sidebar.classList.contains('open')) {
+        if (!sidebar.contains(e.target) && !menuBtn.contains(e.target)) {
+          sidebar.classList.remove('open');
+        }
+      }
+    });
+
+    function toggleDropdown(id) {
+      const dropdowns = ['roleDropdown', 'techDropdown'];
+      dropdowns.forEach(d => {
+        const el = document.getElementById(d);
+        if (d === id) {
+          el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.multiselect')) {
+        document.getElementById('roleDropdown').style.display = 'none';
+        document.getElementById('techDropdown').style.display = 'none';
+      }
+    });
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const pageTitle = document.getElementById('pageTitle');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        navItems.forEach(n => n.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+        item.classList.add('active');
+        const target = item.getAttribute('data-tab');
+        document.getElementById(`tab-${target}`).classList.add('active');
+        pageTitle.textContent = item.textContent.trim();
+        document.getElementById('sidebar').classList.remove('open');
+      });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.classList.remove('active');
+      });
+    });
+
+    // ==========================================
+    // 2. DATA LOGIC
+    // ==========================================
+    let currentUser = null;
+    let userData = null;
+    let exchangeRate = 1500;
+    let cachedJobs = [];
+    let currentPage = 1;
+    const jobsPerPage = 100;
+    let myAssignedProfiles = [];
+
+    setTimeout(() => {
+      if (!window.firebaseReady) return;
+
+      const auth = window.firebaseAuth;
+      const db = window.firebaseDb;
+      const { ref, get, push, set, signOut } = window.firebaseDBFunctions;
+
+      fetch('https://open.er-api.com/v6/latest/USD')
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.rates && data.rates.NGN) {
+            exchangeRate = data.rates.NGN;
+            document.getElementById('exchangeRateText').textContent = `Rate: 1 USD = ₦${exchangeRate.toFixed(2)}`;
+          }
+        }).catch(console.error);
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          window.location.href = 'login.html';
+          return;
+        }
+        currentUser = user;
+
+        try {
+          const snapshot = await get(ref(db, 'users/' + user.uid));
+          if (snapshot.exists()) {
+            userData = snapshot.val();
+            
+            document.getElementById('sidebarName').textContent = userData.fullName;
+            document.getElementById('sidebarRole').textContent = userData.role + (userData.bidderType ? ` (${userData.bidderType})` : '');
+            
+            const avatarDiv = document.getElementById('sidebarAvatar');
+            if (userData.photoURL) {
+              avatarDiv.innerHTML = `<img src="${userData.photoURL}" alt="User">`;
+            } else {
+              const initials = userData.fullName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+              avatarDiv.textContent = initials;
+            }
+
+            loadProfiles();
+            loadJobBoard();
+            loadUserApplications();
+
+          } else {
+            showToast('User profile not found.', 'error');
+          }
+        } catch (err) {
+          console.error("Auth error:", err);
+        }
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      });
+
+      // --- MASSIVE ATS JOB BOARD ENGINE ---
+      const jobListEl = document.getElementById('jobList');
+      const loaderEl = document.getElementById('jobBoardLoader');
+
+      async function loadJobBoard() {
+        const cached = localStorage.getItem('hustler_jobs_ats_v3');
+        const cacheTime = localStorage.getItem('hustler_jobs_ats_v3_time');
+        const now = new Date().getTime();
+
+        if (cached && cacheTime && (now - cacheTime < 6 * 60 * 60 * 1000)) { // 6 hour cache
+          cachedJobs = JSON.parse(cached);
+          renderJobs(cachedJobs);
+          return;
+        }
+
+        loaderEl.style.display = 'block';
+        jobListEl.innerHTML = '';
+
+        try {
+          const greenhouseCompanies = ['stripe', 'figma', 'notion', 'cloudflare', 'datadog', 'mongodb', 'plaid', 'brex', 'ramp', 'scaleai', 'coinbase', 'webflow', 'discord', 'hubspot', 'duolingo', 'asana', 'airtable', 'reddit', 'canva'];
+          const ashbyCompanies = ['openai', 'linear', 'perplexity', 'cursor', 'vanta', 'mercury', 'posthog', 'supabase', 'vercel', 'retool', 'sourcegraph', 'modal', 'elevenlabs'];
+          const leverCompanies = ['spotify', 'netflix', 'lyft', 'doordash', 'affirm', 'flexport', 'chime', 'coursera', 'benchling', 'faire', 'checkr', 'cockroachlabs', 'samsara', 'intercom', 'deel', 'snyk', 'rippling'];
+
+          let allJobs = [];
+
+          const ghPromises = greenhouseCompanies.map(company => 
+            fetch(`https://boards-api.greenhouse.io/v1/boards/${company}/jobs?content=true`).then(r => r.json()).catch(() => ({ jobs: [] }))
+          );
+          const ghResults = await Promise.all(ghPromises);
+          ghResults.forEach((res, idx) => {
+            if (res && res.jobs) {
+              res.jobs.forEach(j => {
+                allJobs.push({
+                  id: `gh-${j.id}`, title: j.title, company: greenhouseCompanies[idx].charAt(0).toUpperCase() + greenhouseCompanies[idx].slice(1), 
+                  url: j.absolute_url, location: j.location?.name || 'Remote',
+                  date: new Date(j.updated_at).getTime(), tags: j.metadata?.map(m => m.value).filter(Boolean) || [], 
+                  source: 'Greenhouse'
+                });
+              });
+            }
+          });
+
+          const ashbyPromises = ashbyCompanies.map(company => 
+            fetch(`https://api.ashbyhq.com/posting-api/job-board/${company}?includeCompensation=true`).then(r => r.json()).catch(() => ({ jobs: [] }))
+          );
+          const ashbyResults = await Promise.all(ashbyPromises);
+          ashbyResults.forEach((res, idx) => {
+            if (res && res.jobs) {
+              res.jobs.forEach(j => {
+                allJobs.push({
+                  id: `ash-${j.id}`, title: j.title, company: ashbyCompanies[idx].charAt(0).toUpperCase() + ashbyCompanies[idx].slice(1), 
+                  url: j.jobUrl, location: j.location || 'Remote',
+                  date: new Date(j.publishedDate).getTime(), tags: [], 
+                  source: 'Ashby'
+                });
+              });
+            }
+          });
+
+          const leverPromises = leverCompanies.map(company => 
+            fetch(`https://api.lever.co/v0/postings/${company}?mode=json`).then(r => r.json()).catch(() => ([]))
+          );
+          const leverResults = await Promise.all(leverPromises);
+          leverResults.forEach((res, idx) => {
+            if (Array.isArray(res)) {
+              res.forEach(j => {
+                allJobs.push({
+                  id: `lev-${j.id}`, title: j.text, company: leverCompanies[idx].charAt(0).toUpperCase() + leverCompanies[idx].slice(1), 
+                  url: j.hostedUrl, location: j.categories?.location || 'Remote',
+                  date: j.createdAt, tags: [j.categories?.team, j.categories?.commitment].filter(Boolean), 
+                  source: 'Lever'
+                });
+              });
+            }
+          });
+
+          const techKeywords = ['engineer', 'developer', 'software', 'data', 'devops', 'frontend', 'backend', 'fullstack', 'ai', 'machine learning', 'programmer', 'tech'];
+          cachedJobs = allJobs.filter(job => {
+            const titleLower = job.title.toLowerCase();
+            return techKeywords.some(kw => titleLower.includes(kw));
+          });
+
+          const uniqueJobs = [];
+          const seen = new Set();
+          cachedJobs.forEach(job => {
+            const cleanUrl = job.url.split('?')[0]; 
+            if (!seen.has(cleanUrl)) {
+              seen.add(cleanUrl);
+              uniqueJobs.push(job);
+            }
+          });
+
+          cachedJobs = uniqueJobs.sort((a, b) => b.date - a.date);
+
+          localStorage.setItem('hustler_jobs_ats_v3', JSON.stringify(cachedJobs));
+          localStorage.setItem('hustler_jobs_ats_v3_time', now.toString());
+
+          renderJobs(cachedJobs);
+
+        } catch (err) {
+          console.error("Job fetch error:", err);
+          showToast('Failed to load jobs. Please try again later.', 'error');
+          jobListEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--danger);">Failed to load jobs. Please refresh.</div>`;
+        } finally {
+          loaderEl.style.display = 'none';
+        }
+      }
+
+      function renderJobs(jobs) {
+        const searchTerm = document.getElementById('jobSearch').value.toLowerCase();
+        const region = document.getElementById('filterRegion').value;
+        const dateFilter = document.getElementById('filterDate').value;
+        
+        const selectedRoles = Array.from(document.querySelectorAll('.role-filter:checked')).map(cb => cb.value);
+        const selectedTech = Array.from(document.querySelectorAll('.tech-filter:checked')).map(cb => cb.value);
+
+        document.getElementById('roleLabel').textContent = selectedRoles.length ? `${selectedRoles.length} Roles` : 'Any Role';
+        document.getElementById('techLabel').textContent = selectedTech.length ? `${selectedTech.length} Techs` : 'Any Tech Stack';
+
+        const now = new Date().getTime();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        const filtered = jobs.filter(job => {
+          const matchSearch = job.title.toLowerCase().includes(searchTerm) || 
+                              job.company.toLowerCase().includes(searchTerm) ||
+                              (job.tags && job.tags.join(' ').toLowerCase().includes(searchTerm));
+          
+          let matchDate = true;
+          if (dateFilter === '24h') matchDate = (now - job.date) <= oneDay;
+          if (dateFilter === '7d') matchDate = (now - job.date) <= (oneDay * 7);
+          if (dateFilter === '14d') matchDate = (now - job.date) <= (oneDay * 14);
+
+          let matchTech = true;
+          if (selectedTech.length > 0) {
+            matchTech = selectedTech.some(tech => (job.tags && job.tags.some(t => t && t.toLowerCase().includes(tech))) || job.title.toLowerCase().includes(tech));
+          }
+
+          let matchRole = true;
+          if (selectedRoles.length > 0) {
+            matchRole = selectedRoles.some(role => job.title.toLowerCase().includes(role));
+          }
+
+          // Strict Location Filter
+          let matchRegion = true;
+          const loc = job.location.toLowerCase();
+          if (region === 'usa') {
+            matchRegion = loc.includes('usa') || loc.includes('us') || loc.includes('america') || loc.includes('new york') || loc.includes('california') || loc === 'remote';
+          }
+          if (region === 'eu') {
+            matchRegion = loc.includes('europe') || loc.includes('eu') || loc.includes('germany') || loc.includes('uk') || loc.includes('london') || loc === 'remote';
+          }
+          if (region === 'latam') {
+            matchRegion = loc.includes('latam') || loc.includes('south america') || loc.includes('brazil') || loc.includes('mexico') || loc === 'remote';
+          }
+
+          return matchSearch && matchDate && matchTech && matchRole && matchRegion;
+        });
+
+        const totalPages = Math.ceil(filtered.length / jobsPerPage);
+        if (currentPage > totalPages) currentPage = totalPages || 1;
+        
+        const startIdx = (currentPage - 1) * jobsPerPage;
+        const paginatedJobs = filtered.slice(startIdx, startIdx + jobsPerPage);
+
+        jobListEl.innerHTML = '';
+
+        if (paginatedJobs.length === 0) {
+          jobListEl.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-muted);">No jobs found matching your criteria.</div>`;
+        } else {
+          paginatedJobs.forEach(job => {
+            const daysAgo = Math.floor((now - job.date) / oneDay);
+            const timeText = daysAgo <= 0 ? 'Today' : `${daysAgo}d ago`;
+            
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.innerHTML = `
+              <div class="job-info">
+                <h4>${job.title}</h4>
+                <div class="job-meta">
+                  <span><i class="ph ph-buildings"></i> ${job.company}</span>
+                  <span><i class="ph ph-map-pin"></i> ${job.location}</span>
+                  <span><i class="ph ph-clock"></i> ${timeText}</span>
+                </div>
+                <div class="job-tags">
+                  ${(job.tags || []).slice(0, 5).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+              </div>
+              <div class="job-actions">
+                <button class="btn btn-primary" onclick="window.open('${job.url}', '_blank')">Apply</button>
+              </div>
+            `;
+            jobListEl.appendChild(card);
+          });
+        }
+
+        renderPagination(totalPages);
+      }
+
+      function renderPagination(totalPages) {
+        const pag = document.getElementById('pagination');
+        pag.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement('button');
+          btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+          btn.textContent = i;
+          btn.onclick = () => {
+            currentPage = i;
+            renderJobs(cachedJobs);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+          pag.appendChild(btn);
+        }
+      }
+
+      document.getElementById('jobSearch').addEventListener('input', () => { currentPage = 1; renderJobs(cachedJobs); });
+      document.getElementById('filterRegion').addEventListener('change', () => { currentPage = 1; renderJobs(cachedJobs); });
+      document.getElementById('filterDate').addEventListener('change', () => { currentPage = 1; renderJobs(cachedJobs); });
+      document.querySelectorAll('.role-filter').forEach(cb => cb.addEventListener('change', () => { currentPage = 1; renderJobs(cachedJobs); }));
+      document.querySelectorAll('.tech-filter').forEach(cb => cb.addEventListener('change', () => { currentPage = 1; renderJobs(cachedJobs); }));
+
+      document.getElementById('downloadJobsBtn').addEventListener('click', () => {
+        if (cachedJobs.length === 0) {
+          showToast('No jobs to export.', 'error');
+          return;
+        }
+        const exportData = cachedJobs.map((job, i) => ({
+          'S/N': i + 1, 'Company': job.company, 'Job Title': job.title,
+          'Location': job.location, 'Source': job.source, 'URL': job.url
+        }));
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Jobs");
+        XLSX.writeFile(wb, `Hustler_Jobs_${new Date().toISOString().split('T')[0]}.xlsx`);
+        showToast('Downloaded successfully!', 'success');
+      });
+
+      // --- PROFILES LOGIC ---
+      async function loadProfiles() {
+        const grid = document.getElementById('profilesGrid');
+        const emptyState = document.getElementById('emptyProfiles');
+        const vortexSelect = document.getElementById('vortexProfileSelect');
+        const reportSelect = document.getElementById('reportProfile');
+        
+        grid.innerHTML = '';
+        vortexSelect.innerHTML = '<option value="">Select a Profile first</option>';
+        reportSelect.innerHTML = '<option value="">Select a Profile...</option>';
+
+        try {
+          const snapshot = await get(ref(db, 'profiles'));
+          if (snapshot.exists()) {
+            const allProfiles = snapshot.val();
+            myAssignedProfiles = [];
+
+            Object.keys(allProfiles).forEach(key => {
+              const p = allProfiles[key];
+              if (p.assignedTo === currentUser.uid) {
+                myAssignedProfiles.push({ id: key, ...p });
+              }
+            });
+
+            if (myAssignedProfiles.length > 0) {
+              emptyState.style.display = 'none';
+              myAssignedProfiles.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                      <h3 style="margin-bottom: 4px;">${p.clientName}</h3>
+                      <span class="tag" style="background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: var(--success);">${p.bidType}</span>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-weight: 700; color: var(--success);">$${p.bidderRate}/bid</div>
+                      <div style="font-size: 12px; color: var(--text-muted);">Quota: ${p.quota}/day</div>
+                    </div>
+                  </div>
+                  <div style="margin-top: 16px;">
+                    <button class="btn btn-outline" style="width: 100%;" onclick="openProfileModal('${p.id}')">View Details</button>
+                  </div>
+                `;
+                grid.appendChild(card);
+
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.clientName;
+                vortexSelect.appendChild(option);
+
+                const option2 = document.createElement('option');
+                option2.value = p.id;
+                option2.textContent = p.clientName;
+                reportSelect.appendChild(option2);
+              });
+            } else {
+              emptyState.style.display = 'block';
+            }
+          } else {
+            emptyState.style.display = 'block';
+          }
+        } catch (err) {
+          console.error("Error loading profiles:", err);
+        }
+      }
+
+      window.openProfileModal = function(profileId) {
+        get(ref(db, 'profiles/' + profileId)).then(snapshot => {
+          if (snapshot.exists()) {
+            const p = snapshot.val();
+            document.getElementById('modalClientName').textContent = p.clientName;
+            document.getElementById('modalBidType').textContent = p.bidType;
+            document.getElementById('modalRate').textContent = `$${p.bidderRate} / bid`;
+            document.getElementById('modalQuota').textContent = `${p.quota} / day`;
+            document.getElementById('modalWeekend').textContent = p.weekend ? 'Yes' : 'No';
+            document.getElementById('modalDetails').textContent = p.details || 'No extra details provided.';
+
+            const resumeBtn = document.getElementById('downloadResumeBtn');
+            const coverBtn = document.getElementById('downloadCoverBtn');
+
+            if (p.resumeUrl) { 
+              resumeBtn.style.display = 'flex'; 
+              resumeBtn.onclick = () => {
+                // Cloudinary force download requires replacing '/upload/' with '/upload/fl_attachment/'
+                const downloadUrl = p.resumeUrl.replace('/upload/', '/upload/fl_attachment/');
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.target = '_blank';
+                a.download = `${p.clientName}_Resume.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }; 
+            } 
+            else { resumeBtn.style.display = 'none'; }
+
+            if (p.coverUrl) { 
+              coverBtn.style.display = 'flex'; 
+              coverBtn.onclick = () => {
+                const downloadUrl = p.coverUrl.replace('/upload/', '/upload/fl_attachment/');
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.target = '_blank';
+                a.download = `${p.clientName}_CoverLetter.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }; 
+            } 
+            else { coverBtn.style.display = 'none'; }
+
+            document.getElementById('profileModal').classList.add('active');
+          }
+        });
+      };
+
+      // --- VORTEX AI ---
+      const vortexSelect = document.getElementById('vortexProfileSelect');
+      const chatInput = document.getElementById('chatInput');
+      const sendChatBtn = document.getElementById('sendChatBtn');
+      const chatArea = document.getElementById('chatArea');
+      let activeProfileContext = null;
+
+      vortexSelect.addEventListener('change', async (e) => {
+        const id = e.target.value;
+        if (!id) {
+          activeProfileContext = null;
+          chatInput.disabled = true;
+          sendChatBtn.disabled = true;
+          return;
+        }
+
+        const snapshot = await get(ref(db, 'profiles/' + id));
+        if (snapshot.exists()) {
+          activeProfileContext = snapshot.val();
+          chatInput.disabled = false;
+          sendChatBtn.disabled = false;
+          
+          chatArea.innerHTML += `
+            <div class="message ai">
+              <div class="msg-bubble">Profile <strong>${activeProfileContext.clientName}</strong> loaded. The AI is now strictly bound to this client's resume and details. How can I help you apply?</div>
+            </div>
+          `;
+          chatArea.scrollTop = chatArea.scrollHeight;
+        }
+      });
+
+      async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text || !activeProfileContext) return;
+
+        chatArea.innerHTML += `
+          <div class="message user">
+            <div class="msg-bubble">${text}</div>
+          </div>
+        `;
+        chatInput.value = '';
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        const typingId = 'typing-' + Date.now();
+        chatArea.innerHTML += `
+          <div class="message ai" id="${typingId}">
+            <div class="msg-bubble typing-indicator">
+              <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+            </div>
+          </div>
+        `;
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        try {
+          const response = await fetch('/api/ai/autopilot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              profile: activeProfileContext,
+              question: text
+            })
+          });
+          
+          if (!response.ok) throw new Error('Backend error');
+          
+          const data = await response.json();
+          const aiText = data.answer || "No answer generated.";
+
+          document.getElementById(typingId).remove();
+
+          const aiMsgId = 'ai-' + Date.now();
+          chatArea.innerHTML += `
+            <div class="message ai" id="${aiMsgId}">
+              <div class="msg-bubble" id="${aiMsgId}-text"></div>
+            </div>
+          `;
+          const textContainer = document.getElementById(`${aiMsgId}-text`);
+          
+          let i = 0;
+          function typeWriter() {
+            if (i < aiText.length) {
+              textContainer.innerHTML += aiText.charAt(i);
+              i++;
+              chatArea.scrollTop = chatArea.scrollHeight;
+              setTimeout(typeWriter, 15);
+            }
+          }
+          typeWriter();
+
+        } catch (err) {
+          document.getElementById(typingId).remove();
+          const aiMsgId = 'ai-' + Date.now();
+          chatArea.innerHTML += `
+            <div class="message ai" id="${aiMsgId}">
+              <div class="msg-bubble" style="color: var(--danger);">Failed to connect to Vortex AI. Ensure your backend and API key are configured on Vercel.</div>
+            </div>
+          `;
+          chatArea.scrollTop = chatArea.scrollHeight;
+        }
+      }
+
+      sendChatBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      // --- DAILY REPORTS ---
+      document.getElementById('submitReportBtn').addEventListener('click', async () => {
+        const profileId = document.getElementById('reportProfile').value;
+        const count = parseInt(document.getElementById('reportAppsCount').value);
+        const notes = document.getElementById('reportNotes').value;
+
+        if (!profileId || isNaN(count) || count <= 0) {
+          showToast('Please select a profile and enter a valid count.', 'error');
+          return;
+        }
+
+        const profile = myAssignedProfiles.find(p => p.id === profileId);
+        if (!profile) return;
+
+        const btn = document.getElementById('submitReportBtn');
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+
+        try {
+          for(let i = 0; i < count; i++) {
+            const newAppRef = push(ref(db, 'applications'));
+            await set(newAppRef, {
+              userId: currentUser.uid,
+              profileId: profileId,
+              clientName: profile.clientName,
+              initialRate: profile.initialRate,
+              bidderRate: profile.bidderRate,
+              date: new Date().toISOString()
+            });
+          }
+
+          const newReportRef = push(ref(db, 'dailyReports'));
+          await set(newReportRef, {
+            userId: currentUser.uid,
+            profileId: profileId,
+            clientName: profile.clientName,
+            count: count,
+            notes: notes,
+            date: new Date().toISOString()
+          });
+
+          showToast(`Successfully recorded ${count} applications for ${profile.clientName}!`, 'success');
+          document.getElementById('reportAppsCount').value = '';
+          document.getElementById('reportNotes').value = '';
+          
+          loadUserApplications();
+
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to submit report.', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Submit Report";
+        }
+      });
+
+      // --- APPLICATIONS & EARNINGS LOGIC ---
+      async function loadUserApplications() {
+        const applicationsList = document.getElementById('applicationsList');
+        const reportsHistoryList = document.getElementById('reportsHistoryList');
+        
+        let totalEarnings = 0;
+        let totalAppsCount = 0;
+
+        try {
+          const appsSnap = await get(ref(db, 'applications'));
+          if (appsSnap.exists()) {
+            const apps = appsSnap.val();
+            let myApps = [];
+
+            Object.keys(apps).forEach(k => {
+              if (apps[k].userId === currentUser.uid) {
+                myApps.push({ id: k, ...apps[k] });
+                totalAppsCount++;
+                totalEarnings += parseFloat(apps[k].bidderRate || 0);
+              }
+            });
+
+            if (myApps.length > 0) {
+              applicationsList.innerHTML = myApps.slice(0, 50).map(a => `
+                <div style="padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                  <div>
+                    <strong>${a.clientName}</strong><br>
+                    <span style="font-size: 12px; color: var(--text-muted);">${new Date(a.date).toLocaleDateString()}</span>
+                  </div>
+                  <div style="font-weight: 600; color: var(--success);">$${a.bidderRate}</div>
+                </div>
+              `).join('');
+            } else {
+              applicationsList.innerHTML = 'No applications recorded yet.';
+            }
+          }
+
+          const reportsSnap = await get(ref(db, 'dailyReports'));
+          if (reportsSnap.exists()) {
+            const reports = reportsSnap.val();
+            let myReports = [];
+            Object.keys(reports).forEach(k => {
+              if (reports[k].userId === currentUser.uid) {
+                myReports.push({ id: k, ...reports[k] });
+              }
+            });
+
+            if (myReports.length > 0) {
+              reportsHistoryList.innerHTML = myReports.slice(0, 20).map(r => `
+                <div style="padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <strong>${r.clientName}</strong>
+                    <span>${r.count} apps</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-muted);">${new Date(r.date).toLocaleDateString()}</div>
+                </div>
+              `).join('');
+            }
+          }
+
+          document.getElementById('walletUSD').textContent = `$${totalEarnings.toFixed(2)}`;
+          document.getElementById('walletNGN').textContent = `₦${(totalEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+          document.getElementById('overviewEarnings').textContent = `$${totalEarnings.toFixed(2)}`;
+          document.getElementById('overviewNaira').textContent = `₦${(totalEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+          document.getElementById('overviewTotalApps').textContent = totalAppsCount;
+
+          let totalQuota = myAssignedProfiles.reduce((sum, p) => sum + parseInt(p.quota || 0), 0);
+          document.getElementById('overviewQuota').textContent = `${totalAppsCount} / ${totalQuota}`;
+
+        } catch (err) {
+          console.error("Error loading applications:", err);
+        }
+      }
+
+      // --- PDF GENERATION WITH BANK MODAL ---
+      document.getElementById('openBankDetailsBtn').addEventListener('click', () => {
+        document.getElementById('bankDetailsModal').classList.add('active');
+      });
+
+      document.getElementById('confirmDownloadPdfBtn').addEventListener('click', async () => {
+        const bankName = document.getElementById('bankName').value.trim();
+        const accountNumber = document.getElementById('accountNumber').value.trim();
+        const accountHolder = document.getElementById('accountHolder').value.trim();
+
+        if (!bankName || !accountNumber || !accountHolder) {
+          showToast('Please fill all bank details.', 'error');
+          return;
+        }
+
+        const btn = document.getElementById('confirmDownloadPdfBtn');
+        const btnText = document.getElementById('pdfBtnText');
+        btn.disabled = true;
+        btnText.textContent = "Generating PDF...";
+
+        // Populate Data in Template
+        document.getElementById('pdfName').textContent = userData.fullName;
+        
+        const startOfWeek = new Date();
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        
+        document.getElementById('pdfPeriod').textContent = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+        document.getElementById('pdfRef').textContent = `HM-${currentUser.uid.substring(0, 5).toUpperCase()}-${new Date().getTime().toString().slice(-4)}`;
+        document.getElementById('pdfDate').textContent = new Date().toLocaleString();
+        
+        let currentBalance = parseFloat(document.getElementById('walletUSD').textContent.replace('$', '')) || 0;
+        let totalApps = document.getElementById('overviewTotalApps').textContent;
+        
+        document.getElementById('pdfApps').textContent = totalApps;
+        document.getElementById('pdfGrossUSD').textContent = `$${currentBalance.toFixed(2)}`;
+        document.getElementById('pdfGrossNGN').textContent = `₦${(currentBalance * exchangeRate).toLocaleString()}`;
+        document.getElementById('pdfNetUSD').textContent = `$${currentBalance.toFixed(2)}`;
+        document.getElementById('pdfNetNGN').textContent = `₦${(currentBalance * exchangeRate).toLocaleString()}`;
+
+        // Populate Bank Details
+        document.getElementById('pdfBank').textContent = bankName;
+        document.getElementById('pdfAccountNum').textContent = accountNumber;
+        document.getElementById('pdfAccountName').textContent = accountHolder;
+        
+        const element = document.getElementById('pdfTemplate');
+        element.style.left = '0'; 
+        
+        try {
+          const canvas = await html2canvas(element, { scale: 2 });
+          element.style.left = '-9999px'; 
+          
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          pdf.save(`Hustler_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+          
+          showToast('PDF Report downloaded successfully!', 'success');
+          document.getElementById('bankDetailsModal').classList.remove('active');
+        } catch (err) {
+          element.style.left = '-9999px';
+          console.error(err);
+          showToast('Failed to generate PDF.', 'error');
+        } finally {
+          btn.disabled = false;
+          btnText.textContent = "Generate & Download PDF";
+        }
+      });
+
+    }, 500);
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+hustler-mindset/
+├── index.html                 (Registration — Phase 1)
+├── login.html                 (Login — Phase 2)
+├── hustlermindset.html        (Bidder Platform — Phase 3)
+│     ├── Overview tab
+│     ├── Job Board tab (filters, apply redirect, pagination)
+│     ├── My Profiles tab (assigned profiles, resume download)
+│     ├── Vortex AI tab (autopilot chat)
+│     ├── My Applications tab (tracking)
+│     ├── Daily Reports tab
+│     ├── Earnings & Wallet tab (USD + NGN)
+│     ├── Weekly Reports tab
+│     └── Profile Settings tab
+├── admin.html                 (Super Admin + Admin Dashboard — Phase 4)
+│     ├── Overview (stats, revenue, profit)
+│     ├── Pending Approvals
+│     ├── All Users (bidders + admins)
+│     ├── Profile Assignment (modal per bidder)
+│     ├── Financials (revenue/profit by week)
+│     ├── Applications Monitor
+│     ├── Daily Reports Review
+│     └── System Settings (job sources toggle, rate display)
+├── api/
+│   └── index.js               (Backend — Phase 5)
+│         ├── POST /api/auth/check           (verify token, return role/status)
+│         ├── POST /api/admin/approve        (owner only)
+│         ├── POST /api/admin/ban            (owner only)
+│         ├── POST /api/profiles/assign      (admin/owner)
+│         ├── POST /api/profiles/list        (bidder: own profiles; admin: assigned by them)
+│         ├── POST /api/jobs/refresh         (cron or manual trigger)
+│         ├── GET  /api/jobs/list            (cached job feed)
+│         ├── POST /api/jobs/export          (xlsx generation)
+│         ├── POST /api/ai/autopilot         (OpenRouter proxy, profile-scoped)
+│         ├── POST /api/applications/record  (bidder records application)
+│         ├── GET  /api/finance/rates         (USD/NGN)
+│         └── POST /api/reports/daily        (submit daily report)
+├── vercel.json                (Cron config for job refresh)
+├── firebase-rules.json        (Security rules — provided with Phase 5)
+└── package.json               (firebase, xlsx, node-fetch, etc.)
