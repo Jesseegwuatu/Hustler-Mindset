@@ -57,7 +57,7 @@ ${profile.resumeUrl ? 'Resume is attached/available.' : 'No resume text provided
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash", // Extremely reliable free model
+          model: "openrouter/free", // Extremely reliable free model
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: question }
