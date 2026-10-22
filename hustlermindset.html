@@ -63,7 +63,6 @@
       --input-bg: #f9fafb;
       --danger: #ef4444;
       --success: #10b981;
-      --warning: #f59e0b;
     }
 
     [data-theme="dark"] {
@@ -340,7 +339,7 @@
       font-family: 'Inter', sans-serif;
       width: 800px; 
       position: absolute;
-      left: -9999px; /* Hidden offscreen */
+      left: -9999px; 
     }
     .pdf-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #d4af37; padding-bottom: 20px; }
     .pdf-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 5px; font-family: 'Outfit', sans-serif; color: #000;}
@@ -737,7 +736,7 @@
 
     <div class="pdf-footer">
       <p>This is a system-generated document from Hustler Mindset Ecosystem.</p>
-      <p>&copy; 2026 Hustler Mindset. All rights reserved.</p>
+      <p>&copy; 2024 Hustler Mindset. All rights reserved.</p>
     </div>
   </div>
 
@@ -910,7 +909,7 @@
         const cacheTime = localStorage.getItem('hustler_jobs_ats_v3_time');
         const now = new Date().getTime();
 
-        if (cached && cacheTime && (now - cacheTime < 6 * 60 * 60 * 1000)) { // 6 hour cache
+        if (cached && cacheTime && (now - cacheTime < 6 * 60 * 60 * 1000)) {
           cachedJobs = JSON.parse(cached);
           renderJobs(cachedJobs);
           return;
@@ -1043,7 +1042,6 @@
             matchRole = selectedRoles.some(role => job.title.toLowerCase().includes(role));
           }
 
-          // Strict Location Filter
           let matchRegion = true;
           const loc = job.location.toLowerCase();
           if (region === 'usa') {
@@ -1223,10 +1221,9 @@
             if (p.resumeUrl) { 
               resumeBtn.style.display = 'flex'; 
               resumeBtn.onclick = () => {
-                // Cloudinary force download requires replacing '/upload/' with '/upload/fl_attachment/'
-                const downloadUrl = p.resumeUrl.replace('/upload/', '/upload/fl_attachment/');
+                // Use a direct anchor download attribute
                 const a = document.createElement('a');
-                a.href = downloadUrl;
+                a.href = p.resumeUrl; // No more fl_attachment hack needed
                 a.target = '_blank';
                 a.download = `${p.clientName}_Resume.pdf`;
                 document.body.appendChild(a);
@@ -1239,9 +1236,8 @@
             if (p.coverUrl) { 
               coverBtn.style.display = 'flex'; 
               coverBtn.onclick = () => {
-                const downloadUrl = p.coverUrl.replace('/upload/', '/upload/fl_attachment/');
                 const a = document.createElement('a');
-                a.href = downloadUrl;
+                a.href = p.coverUrl;
                 a.target = '_blank';
                 a.download = `${p.clientName}_CoverLetter.pdf`;
                 document.body.appendChild(a);
@@ -1319,9 +1315,12 @@
             })
           });
           
-          if (!response.ok) throw new Error('Backend error');
-          
           const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Backend rejected the request');
+          }
+          
           const aiText = data.answer || "No answer generated.";
 
           document.getElementById(typingId).remove();
@@ -1350,7 +1349,7 @@
           const aiMsgId = 'ai-' + Date.now();
           chatArea.innerHTML += `
             <div class="message ai" id="${aiMsgId}">
-              <div class="msg-bubble" style="color: var(--danger);">Failed to connect to Vortex AI. Ensure your backend and API key are configured on Vercel.</div>
+              <div class="msg-bubble" style="color: var(--danger);">Error: ${err.message}</div>
             </div>
           `;
           chatArea.scrollTop = chatArea.scrollHeight;
@@ -1512,7 +1511,6 @@
         btn.disabled = true;
         btnText.textContent = "Generating PDF...";
 
-        // Populate Data in Template
         document.getElementById('pdfName').textContent = userData.fullName;
         
         const startOfWeek = new Date();
@@ -1533,7 +1531,6 @@
         document.getElementById('pdfNetUSD').textContent = `$${currentBalance.toFixed(2)}`;
         document.getElementById('pdfNetNGN').textContent = `₦${(currentBalance * exchangeRate).toLocaleString()}`;
 
-        // Populate Bank Details
         document.getElementById('pdfBank').textContent = bankName;
         document.getElementById('pdfAccountNum').textContent = accountNumber;
         document.getElementById('pdfAccountName').textContent = accountHolder;
