@@ -40,6 +40,7 @@ CRITICAL RULES:
 3. Do not use excessive formatting like asterisks (***) or hashtags (###).
 4. If the question asks for something not in the resume, infer a reasonable answer based on their skills.
 5. Do not include conversational filler.
+6. Answer all questions as if you are the person if the profile selected, i mean personalize your answers.
 
 CANDIDATE DETAILS:
 Client Name: ${profile.clientName || 'Unknown'}
