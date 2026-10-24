@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Hustler Mindset | Super Admin</title>
+  <title>Hustler Mindset | Admin Dashboard</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -106,6 +106,15 @@
     .nav-item.active { background: var(--primary); color: #fff; }
     [data-theme="dark"] .nav-item.active { color: #000; }
     .nav-item i { font-size: 20px; }
+    .nav-item .badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
 
     .sidebar-footer {
       padding: 20px;
@@ -196,7 +205,9 @@
     }
     .btn-primary { background: var(--primary); color: #fff; }
     [data-theme="dark"] .btn-primary { color: #000; }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
     .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-outline:hover { background: var(--input-bg); }
     .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
@@ -292,16 +303,31 @@
     <div class="sidebar-header">HUSTLER <span>ADMIN</span></div>
     <div class="nav-links">
       <button class="nav-item active" data-tab="overview"><i class="ph ph-squares-four"></i> Overview</button>
-      <button class="nav-item" data-tab="approvals"><i class="ph ph-user-check"></i> Pending Approvals</button>
+      
+      <!-- Only visible to CEO -->
+      <button class="nav-item ceo-only" data-tab="approvals" style="display:none;"><i class="ph ph-user-check"></i> Pending Approvals</button>
+      
       <button class="nav-item" data-tab="users"><i class="ph ph-users"></i> User Management</button>
       <button class="nav-item" data-tab="assign"><i class="ph ph-user-plus"></i> Assign Profiles</button>
+      
+      <!-- Deduction Reviews Tab with Badge -->
+      <button class="nav-item" data-tab="deductions">
+        <i class="ph ph-warning-circle"></i> Deduction Reviews
+        <span class="badge" id="deductionBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- Ban Requests Tab (CEO ONLY) -->
+      <button class="nav-item ceo-only" data-tab="ban-requests" style="display:none;">
+        <i class="ph ph-prohibit"></i> Ban Requests
+        <span class="badge" id="banBadge" style="display:none;">0</span>
+      </button>
     </div>
     <div class="sidebar-footer">
       <div class="user-profile">
         <div class="avatar" id="sidebarAvatar">A</div>
         <div class="user-info">
           <div class="name" id="sidebarName">Loading...</div>
-          <div class="role" id="sidebarRole">Super Admin</div>
+          <div class="role" id="sidebarRole">Loading...</div>
         </div>
       </div>
       <button class="btn-logout" id="logoutBtn"><i class="ph ph-sign-out"></i> Sign Out</button>
@@ -326,9 +352,9 @@
           <div class="card stat-card">
             <h3>Total Users</h3>
             <div class="value" id="statTotalUsers">0</div>
-            <div class="subtext">Bidders and Admins</div>
+            <div class="subtext" id="subtextUsers">Bidders and Admins</div>
           </div>
-          <div class="card stat-card">
+          <div class="card stat-card ceo-only" style="display:none;">
             <h3>Pending Approvals</h3>
             <div class="value" id="statPendingUsers">0</div>
             <div class="subtext">Requires your attention</div>
@@ -336,7 +362,7 @@
           <div class="card stat-card">
             <h3>Total Assigned Profiles</h3>
             <div class="value" id="statTotalProfiles">0</div>
-            <div class="subtext">Across all bidders</div>
+            <div class="subtext" id="subtextProfiles">Across all bidders</div>
           </div>
         </div>
         
@@ -369,35 +395,9 @@
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3>Financial History</h3>
-            <select id="historyFilter" class="form-control" style="width: auto;">
-              <option value="week">Last 4 Weeks</option>
-              <option value="month">Last 3 Months</option>
-            </select>
-          </div>
-          <div class="table-responsive">
-            <table id="historyTable">
-              <thead>
-                <tr>
-                  <th>Period</th>
-                  <th>Applications</th>
-                  <th>Revenue (USD)</th>
-                  <th>Profit (USD)</th>
-                  <th>Profit (NGN)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No financial history available yet. Data appears once applications are recorded.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
       </section>
 
-      <!-- TAB: PENDING APPROVALS -->
+      <!-- TAB: PENDING APPROVALS (CEO ONLY) -->
       <section class="tab-content" id="tab-approvals">
         <div class="card">
           <h3 style="margin-bottom: 16px;">Pending User Requests</h3>
@@ -435,7 +435,7 @@
                   <th>Role</th>
                   <th>Status</th>
                   <th>Total Quota</th>
-                  <th>Avg. Base Rate</th>
+                  <th>True Base Rate / Profit Rate</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -471,6 +471,62 @@
         </div>
       </section>
 
+      <!-- TAB: DEDUCTION REVIEWS -->
+      <section class="tab-content" id="tab-deductions">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">Pending Deduction Reviews</h3>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Approve to deduct $1.00 from the bidder's payout for missing their quota. Decline to forgive the deduction.</p>
+          
+          <div class="table-responsive">
+            <table id="deductionsTable">
+              <thead>
+                <tr>
+                  <th>Bidder Name</th>
+                  <th>Client</th>
+                  <th>Target Quota</th>
+                  <th>Achieved</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="noDeductions" style="text-align: center; padding: 20px; color: var(--text-muted); display: none;">
+            No pending deduction reviews at this time.
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: BAN REQUESTS (CEO ONLY) -->
+      <section class="tab-content" id="tab-ban-requests">
+        <div class="card">
+          <h3 style="margin-bottom: 16px;">Ban Requests from Admins</h3>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">Approve to ban the user, or Decline to dismiss the request.</p>
+          
+          <div class="table-responsive">
+            <table id="banRequestsTable">
+              <thead>
+                <tr>
+                  <th>Bidder Name</th>
+                  <th>Requested By (Admin)</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Rows injected via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="noBanRequests" style="text-align: center; padding: 20px; color: var(--text-muted); display: none;">
+            No pending ban requests at this time.
+          </div>
+        </div>
+      </section>
+
     </div>
   </main>
 
@@ -478,7 +534,7 @@
   <div class="modal-overlay" id="approveModal">
     <div class="modal-content">
       <button class="close-modal" onclick="document.getElementById('approveModal').classList.remove('active')"><i class="ph ph-x"></i></button>
-      <h2 class="modal-header">Approve User</h2>
+      <h2 class="modal-header">Review User</h2>
       
       <div class="input-group">
         <label>Role</label>
@@ -488,11 +544,14 @@
         </select>
       </div>
       
-      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" id="confirmApproveBtn">Approve Account</button>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-danger" style="flex: 1;" id="rejectUserBtn">Reject</button>
+        <button class="btn btn-success" style="flex: 1;" id="confirmApproveBtn">Approve</button>
+      </div>
     </div>
   </div>
 
-  <!-- Assign Profile Modal -->
+  <!-- Assign/Edit Profile Modal -->
   <div class="modal-overlay" id="assignProfileModal">
     <div class="modal-content">
       <button class="close-modal" onclick="document.getElementById('assignProfileModal').classList.remove('active')"><i class="ph ph-x"></i></button>
@@ -549,12 +608,18 @@
         </div>
       </div>
 
-      <div class="input-group" style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
-        <input type="checkbox" id="weekendToggle" style="width: 18px; height: 18px; cursor: pointer;">
-        <label for="weekendToggle" style="cursor: pointer; margin-bottom: 0;">Requires Weekend Work</label>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="input-group">
+          <label>Report Deadline (WAT)</label>
+          <input type="text" id="reportDeadline" class="form-control" value="01:30" placeholder="e.g. 01:30">
+        </div>
+        <div class="input-group" style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin-top: 24px;">
+          <input type="checkbox" id="weekendToggle" style="width: 18px; height: 18px; cursor: pointer;">
+          <label for="weekendToggle" style="cursor: pointer; margin-bottom: 0;">Requires Weekend Work</label>
+        </div>
       </div>
 
-      <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" id="saveProfileBtn">
+      <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" id="saveProfileBtn">
         <span id="saveProfileText">Assign Profile</span>
       </button>
     </div>
@@ -566,7 +631,7 @@
       <button class="close-modal" onclick="document.getElementById('manageProfilesModal').classList.remove('active')"><i class="ph ph-x"></i></button>
       <h2 class="modal-header">Profiles for <span id="manageProfilesName" style="color: var(--primary);"></span></h2>
       
-      <div id="manageProfilesList" style="display: flex; flex-direction: column; gap: 12px;">
+      <div id="manageProfilesList" style="display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
         <!-- Profiles injected here -->
       </div>
     </div>
@@ -604,6 +669,8 @@
     // ==========================================
     // 1. UI LOGIC
     // ==========================================
+    let currentAdminRole = 'bidder';
+
     const themeIcon = document.getElementById('themeIcon');
     const currentTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', currentTheme);
@@ -639,7 +706,6 @@
       document.getElementById('sidebar').classList.toggle('open');
     });
 
-    // Close sidebar on outside click for mobile
     document.addEventListener('click', (e) => {
       const sidebar = document.getElementById('sidebar');
       const menuBtn = document.getElementById('mobileMenuBtn');
@@ -662,12 +728,11 @@
         item.classList.add('active');
         const target = item.getAttribute('data-tab');
         document.getElementById(`tab-${target}`).classList.add('active');
-        pageTitle.textContent = item.textContent.trim();
+        pageTitle.textContent = item.textContent.trim().replace(/[0-9]/g, ''); 
         document.getElementById('sidebar').classList.remove('open');
       });
     });
 
-    // Close Modals on outside click
     document.querySelectorAll('.modal-overlay').forEach(modal => {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.classList.remove('active');
@@ -675,11 +740,14 @@
     });
 
     // ==========================================
-    // 2. DATA LOGIC
+    // 2. DATA LOGIC & PERMISSIONS
     // ==========================================
     let currentUser = null;
+    let currentUserData = null;
     let allUsersData = {};
     let allProfilesData = {};
+    let allDeductionsData = {};
+    let allBanRequestsData = {};
     let pendingUserIdToApprove = null;
     let assignToUserId = null;
     let currentExchangeRate = 1500;
@@ -691,7 +759,6 @@
       const db = window.firebaseDb;
       const { ref, get, update, push, set, remove, signOut } = window.firebaseDBFunctions;
 
-      // Fetch Exchange Rate
       fetch('https://open.er-api.com/v6/latest/USD')
         .then(res => res.json())
         .then(data => {
@@ -711,17 +778,28 @@
         try {
           const snapshot = await get(ref(db, 'users/' + user.uid));
           if (snapshot.exists()) {
-            const userData = snapshot.val();
+            currentUserData = snapshot.val();
             
-            // Security Check
-            if (userData.email !== 'jesseegwuatu@gmail.com' && userData.role !== 'owner') {
-               showToast('Access Denied. Super Admin only.', 'error');
+            if (currentUserData.role !== 'admin' && currentUserData.role !== 'owner' && currentUserData.email !== 'jesseegwuatu@gmail.com') {
+               showToast('Access Denied. Admins only.', 'error');
                setTimeout(() => window.location.href = 'hustlermindset.html', 2000);
                return;
             }
 
-            document.getElementById('sidebarName').textContent = userData.fullName;
-            document.getElementById('sidebarRole').textContent = userData.role;
+            currentAdminRole = currentUserData.role;
+            const isCeo = currentAdminRole === 'owner' || currentUserData.email === 'jesseegwuatu@gmail.com';
+
+            document.getElementById('sidebarName').textContent = currentUserData.fullName;
+            document.getElementById('sidebarRole').textContent = isCeo ? 'Super Admin' : 'Admin';
+            
+            if (isCeo) {
+              document.querySelectorAll('.ceo-only').forEach(el => el.style.display = 'flex');
+              document.getElementById('subtextUsers').textContent = "Global platform users";
+              document.getElementById('subtextProfiles').textContent = "Global assigned profiles";
+            } else {
+              document.getElementById('subtextUsers').textContent = "Global platform users (Restricted Actions)";
+              document.getElementById('subtextProfiles').textContent = "Global profiles (Restricted Assignment)";
+            }
             
             loadDashboardData();
 
@@ -749,6 +827,14 @@
         let allAppsData = {};
         if (appsSnap.exists()) allAppsData = appsSnap.val();
 
+        const dedSnap = await get(ref(db, 'quotaReviews'));
+        if (dedSnap.exists()) allDeductionsData = dedSnap.val();
+        else allDeductionsData = {};
+
+        const banSnap = await get(ref(db, 'banRequests'));
+        if (banSnap.exists()) allBanRequestsData = banSnap.val();
+        else allBanRequestsData = {};
+
         processData(allAppsData);
       }
 
@@ -762,14 +848,28 @@
         let weekPayout = 0;
         let weekAppsCount = 0;
 
+        const now = new Date();
+        const dayOfWeek = now.getDay() || 7; 
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+        startOfWeek.setHours(0,0,0,0);
+        
+        const isCeo = currentAdminRole === 'owner' || currentUserData.email === 'jesseegwuatu@gmail.com';
+
         // Calculate Weekly Financials
         Object.keys(allApps).forEach(appId => {
           const app = allApps[appId];
-          // In a real scenario, filter by current week. For now, sum all for demo.
-          weekAppsCount += 1;
-          weekRevenue += parseFloat(app.initialRate || 0);
-          weekPayout += parseFloat(app.bidderRate || 0);
-          weekProfit += (parseFloat(app.initialRate || 0) - parseFloat(app.bidderRate || 0));
+          const appDate = new Date(app.date);
+          
+          const profile = allProfilesData[app.profileId];
+          const isAssignedByMe = profile && profile.assignedBy === currentUser.uid;
+
+          if ((isCeo || isAssignedByMe) && appDate >= startOfWeek) {
+            weekAppsCount += 1;
+            weekRevenue += parseFloat(app.initialRate || 0);
+            weekPayout += parseFloat(app.bidderRate || 0);
+            weekProfit += (parseFloat(app.initialRate || 0) - parseFloat(app.bidderRate || 0));
+          }
         });
 
         document.getElementById('statRevenueUSD').textContent = `$${weekRevenue.toFixed(2)}`;
@@ -783,32 +883,48 @@
         
         document.getElementById('statTotalApps').textContent = weekAppsCount;
 
-        // User Tables
         const pendingTable = document.getElementById('pendingTable').querySelector('tbody');
         const usersTable = document.getElementById('usersTable').querySelector('tbody');
         const assignTable = document.getElementById('assignTable').querySelector('tbody');
+        const dedTable = document.getElementById('deductionsTable').querySelector('tbody');
+        const banReqTable = document.getElementById('banRequestsTable').querySelector('tbody');
         
         pendingTable.innerHTML = '';
         usersTable.innerHTML = '';
         assignTable.innerHTML = '';
+        dedTable.innerHTML = '';
+        banReqTable.innerHTML = '';
+
+        let myBidderIds = new Set();
 
         // Pre-calculate profile stats per user
         let userProfileStats = {};
         Object.keys(allProfilesData).forEach(pid => {
           const p = allProfilesData[pid];
+          
           if (!userProfileStats[p.assignedTo]) {
-            userProfileStats[p.assignedTo] = { count: 0, totalQuota: 0, totalProfitRate: 0 };
+             userProfileStats[p.assignedTo] = { count: 0, totalQuota: 0, totalProfitRate: 0, assignedByCeo: false };
           }
           userProfileStats[p.assignedTo].count += 1;
           userProfileStats[p.assignedTo].totalQuota += parseInt(p.quota || 0);
           userProfileStats[p.assignedTo].totalProfitRate += (parseFloat(p.initialRate || 0) - parseFloat(p.bidderRate || 0));
+          
+          if (p.assignedBy === currentUser.uid) myBidderIds.add(p.assignedTo);
+          
+          // Check if this profile was assigned by the CEO
+          const assigner = allUsersData[p.assignedBy];
+          if (p.assignedBy === currentUser.uid || (assigner && (assigner.email === 'jesseegwuatu@gmail.com' || assigner.role === 'owner'))) {
+            userProfileStats[p.assignedTo].assignedByCeo = true;
+          }
+          totalProfiles++;
         });
 
         Object.keys(allUsersData).forEach(uid => {
           const u = allUsersData[uid];
           totalUsers++;
           
-          if (u.status === 'pending') {
+          // Pending Table (CEO Only)
+          if (u.status === 'pending' && isCeo) {
             pendingCount++;
             pendingTable.innerHTML += `
               <tr>
@@ -821,21 +937,28 @@
             `;
           }
 
-          // Calculate User Stats
-          const isOwner = u.email === 'jesseegwuatu@gmail.com' || u.role === 'owner';
+          const isTargetOwner = u.email === 'jesseegwuatu@gmail.com' || u.role === 'owner';
           let displayQuota = 0;
           let displayRate = 0;
 
-          if (isOwner) {
-            // CEO sees accumulated stats of all profiles
+          if (isTargetOwner) {
             Object.values(userProfileStats).forEach(stat => {
               displayQuota += stat.totalQuota;
-              displayRate += stat.totalProfitRate; // CEO's true rate is the profit rate
+              displayRate += stat.totalProfitRate;
             });
           } else {
-            // Bidders see their own assigned quotas
             displayQuota = userProfileStats[uid] ? userProfileStats[uid].totalQuota : 0;
             displayRate = u.baseRate || 0;
+          }
+
+          // ACTIONS logic based on role
+          let actionBtn = '';
+          if (isTargetOwner) {
+             actionBtn = '<em style="color: var(--text-muted);">Protected</em>';
+          } else if (isCeo) {
+             actionBtn = `<button class="btn btn-outline" onclick="toggleBan('${uid}', '${u.status}')">${u.status === 'banned' ? 'Unban' : 'Ban'}</button>`;
+          } else {
+             actionBtn = `<button class="btn btn-outline" onclick="requestBan('${uid}', '${u.fullName}')">Request Ban</button>`;
           }
 
           usersTable.innerHTML += `
@@ -845,18 +968,21 @@
               <td><span class="status-badge status-${u.status || 'pending'}">${u.status || 'pending'}</span></td>
               <td>${displayQuota}</td>
               <td>$${parseFloat(displayRate).toFixed(2)}</td>
-              <td>
-                ${isOwner ? '<em style="color: var(--text-muted);">Protected</em>' : `
-                  <button class="btn btn-outline" onclick="toggleBan('${uid}', '${u.status}')">
-                    ${u.status === 'banned' ? 'Unban' : 'Ban'}
-                  </button>
-                `}
-              </td>
+              <td>${actionBtn}</td>
             </tr>
           `;
 
           if (u.role === 'bidder' && u.status === 'approved') {
             const pCount = userProfileStats[uid] ? userProfileStats[uid].count : 0;
+            const assignedByCeo = userProfileStats[uid] ? userProfileStats[uid].assignedByCeo : false;
+            
+            let assignBtn = '';
+            if (isCeo || !assignedByCeo) {
+              assignBtn = `<button class="btn btn-primary" onclick="openAssignModal('${uid}', '${u.fullName}')"><i class="ph ph-plus"></i> New</button>`;
+            } else {
+              assignBtn = `<button class="btn btn-outline" disabled title="Managed by CEO"><i class="ph ph-lock"></i> Locked</button>`;
+            }
+
             assignTable.innerHTML += `
               <tr>
                 <td>${u.fullName}</td>
@@ -866,25 +992,89 @@
                     <i class="ph ph-briefcase"></i> ${pCount} Profiles
                   </button>
                 </td>
-                <td>
-                  <button class="btn btn-primary" onclick="openAssignModal('${uid}', '${u.fullName}')">
-                    <i class="ph ph-plus"></i> New
-                  </button>
+                <td>${assignBtn}</td>
+              </tr>
+            `;
+          }
+        });
+
+        // Render Deductions
+        let pendingDeductionsCount = 0;
+        Object.keys(allDeductionsData).forEach(dedId => {
+          const d = allDeductionsData[dedId];
+          if (d.status === 'pending') {
+            if (!isCeo && !myBidderIds.has(d.userId)) return;
+            
+            pendingDeductionsCount++;
+            dedTable.innerHTML += `
+              <tr>
+                <td>${d.bidderName}</td>
+                <td>${d.clientName}</td>
+                <td>${d.targetQuota}</td>
+                <td>${d.achieved} <span style="color: var(--danger); font-size:12px;">(-${d.targetQuota - d.achieved})</span></td>
+                <td>${new Date(d.date).toLocaleDateString()}</td>
+                <td style="display: flex; gap: 8px;">
+                  <button class="btn btn-danger btn-icon" onclick="processDeduction('${dedId}', 'declined')" title="Decline"><i class="ph ph-x"></i></button>
+                  <button class="btn btn-success btn-icon" onclick="processDeduction('${dedId}', 'approved')" title="Approve"><i class="ph ph-check"></i></button>
                 </td>
               </tr>
             `;
           }
         });
 
+        if (pendingDeductionsCount > 0) {
+          document.getElementById('deductionBadge').textContent = pendingDeductionsCount;
+          document.getElementById('deductionBadge').style.display = 'inline-block';
+          document.getElementById('noDeductions').style.display = 'none';
+        } else {
+          document.getElementById('deductionBadge').style.display = 'none';
+          document.getElementById('noDeductions').style.display = 'block';
+        }
+
+        // Render Ban Requests (CEO Only)
+        let pendingBanCount = 0;
+        if (isCeo) {
+          Object.keys(allBanRequestsData).forEach(reqId => {
+            const r = allBanRequestsData[reqId];
+            if (r.status === 'pending') {
+              pendingBanCount++;
+              const requester = allUsersData[r.requestedBy] ? allUsersData[r.requestedBy].fullName : 'Unknown Admin';
+              banReqTable.innerHTML += `
+                <tr>
+                  <td>${r.targetName}</td>
+                  <td>${requester}</td>
+                  <td>${new Date(r.date).toLocaleDateString()}</td>
+                  <td style="display: flex; gap: 8px;">
+                    <button class="btn btn-danger btn-icon" onclick="processBanRequest('${reqId}', 'declined')" title="Decline"><i class="ph ph-x"></i></button>
+                    <button class="btn btn-success btn-icon" onclick="processBanRequest('${reqId}', 'approved')" title="Approve Ban"><i class="ph ph-check"></i></button>
+                  </td>
+                </tr>
+              `;
+            }
+          });
+
+          if (pendingBanCount > 0) {
+            document.getElementById('banBadge').textContent = pendingBanCount;
+            document.getElementById('banBadge').style.display = 'inline-block';
+            document.getElementById('noBanRequests').style.display = 'none';
+          } else {
+            document.getElementById('banBadge').style.display = 'none';
+            document.getElementById('noBanRequests').style.display = 'block';
+          }
+        }
+
         document.getElementById('statTotalUsers').textContent = totalUsers;
-        document.getElementById('statPendingUsers').textContent = pendingCount;
-        document.getElementById('statTotalProfiles').textContent = Object.keys(allProfilesData).length;
-        document.getElementById('noPending').style.display = pendingCount === 0 ? 'block' : 'none';
+        if (isCeo) document.getElementById('statPendingUsers').textContent = pendingCount;
+        document.getElementById('statTotalProfiles').textContent = totalProfiles;
+        if (isCeo) document.getElementById('noPending').style.display = pendingCount === 0 ? 'block' : 'none';
       }
 
       // --- ACTIONS ---
 
       window.openApproveModal = function(uid) {
+        if (currentAdminRole !== 'owner' && currentUserData.email !== 'jesseegwuatu@gmail.com') {
+           return showToast('Only the CEO can approve users.', 'error');
+        }
         pendingUserIdToApprove = uid;
         document.getElementById('approveModal').classList.add('active');
       }
@@ -893,10 +1083,7 @@
         if (!pendingUserIdToApprove) return;
         const role = document.getElementById('approveRole').value;
         try {
-          await update(ref(db, 'users/' + pendingUserIdToApprove), {
-            status: 'approved',
-            role: role
-          });
+          await update(ref(db, 'users/' + pendingUserIdToApprove), { status: 'approved', role: role });
           showToast('User approved successfully!', 'success');
           document.getElementById('approveModal').classList.remove('active');
           loadDashboardData();
@@ -905,7 +1092,22 @@
         }
       });
 
+      document.getElementById('rejectUserBtn').addEventListener('click', async () => {
+        if (!pendingUserIdToApprove) return;
+        try {
+          await update(ref(db, 'users/' + pendingUserIdToApprove), { status: 'rejected' });
+          showToast('User rejected.', 'success');
+          document.getElementById('approveModal').classList.remove('active');
+          loadDashboardData();
+        } catch (err) {
+          showToast('Failed to reject user.', 'error');
+        }
+      });
+
       window.toggleBan = async function(uid, currentStatus) {
+        if (currentAdminRole !== 'owner' && currentUserData.email !== 'jesseegwuatu@gmail.com') {
+          return showToast('Only the CEO can ban/unban users.', 'error');
+        }
         const newStatus = currentStatus === 'banned' ? 'approved' : 'banned';
         try {
           await update(ref(db, 'users/' + uid), { status: newStatus });
@@ -916,6 +1118,64 @@
         }
       }
 
+      window.requestBan = async function(uid, name) {
+        if (confirm(`Request to ban ${name}? This will be sent to the Super Admin for approval.`)) {
+          try {
+            const newReqRef = push(ref(db, 'banRequests'));
+            await set(newReqRef, {
+              targetId: uid,
+              targetName: name,
+              requestedBy: currentUser.uid,
+              date: new Date().toISOString(),
+              status: 'pending'
+            });
+            showToast('Ban request sent to Super Admin.', 'success');
+          } catch (err) {
+            showToast('Failed to send request.', 'error');
+          }
+        }
+      }
+
+      window.processBanRequest = async function(reqId, action) {
+        try {
+          const req = allBanRequestsData[reqId];
+          if (action === 'approved') {
+            await update(ref(db, 'users/' + req.targetId), { status: 'banned' });
+          }
+          await update(ref(db, 'banRequests/' + reqId), { status: action });
+          showToast(`Ban request ${action}.`, 'success');
+          loadDashboardData();
+        } catch (err) {
+          showToast('Failed to process ban request.', 'error');
+        }
+      }
+
+      window.processDeduction = async function(dedId, action) {
+        try {
+          if (action === 'approved') {
+            const ded = allDeductionsData[dedId];
+            await update(ref(db, 'quotaReviews/' + dedId), { status: 'approved' });
+            
+            const newDedRef = push(ref(db, 'deductions'));
+            await set(newDedRef, {
+              userId: ded.userId,
+              amount: ded.amount,
+              reason: `Missed quota for ${ded.clientName} on ${new Date(ded.date).toLocaleDateString()}`,
+              date: new Date().toISOString(),
+              status: 'approved'
+            });
+            showToast('Deduction approved and recorded.', 'success');
+          } else {
+            await update(ref(db, 'quotaReviews/' + dedId), { status: 'declined' });
+            showToast('Deduction declined.', 'info');
+          }
+          loadDashboardData();
+        } catch (err) {
+          console.error(err);
+          showToast('Failed to process deduction.', 'error');
+        }
+      }
+
       // --- PROFILE MANAGEMENT ---
 
       window.openManageProfiles = function(uid, name) {
@@ -923,7 +1183,12 @@
         const listEl = document.getElementById('manageProfilesList');
         listEl.innerHTML = '';
 
-        const userProfiles = Object.keys(allProfilesData).filter(k => allProfilesData[k].assignedTo === uid);
+        const isCeo = currentAdminRole === 'owner' || currentUserData.email === 'jesseegwuatu@gmail.com';
+
+        const userProfiles = Object.keys(allProfilesData).filter(k => {
+          const p = allProfilesData[k];
+          return p.assignedTo === uid && (isCeo || p.assignedBy === currentUser.uid);
+        });
         
         if (userProfiles.length === 0) {
           listEl.innerHTML = `<p style="color: var(--text-muted);">No profiles assigned yet.</p>`;
@@ -935,7 +1200,7 @@
                 <div>
                   <h4 style="margin-bottom: 4px;">${p.clientName}</h4>
                   <div style="font-size: 12px; color: var(--text-muted);">
-                    Quota: ${p.quota}/day | Bidder Rate: $${p.bidderRate} | Type: ${p.bidType}
+                    Quota: ${p.quota}/day | Rate: $${p.bidderRate} | Deadline: ${p.reportDeadline || '01:30'}
                   </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
@@ -961,6 +1226,7 @@
         document.getElementById('bidderRate').value = p.bidderRate;
         document.getElementById('profileQuota').value = p.quota;
         document.getElementById('bidType').value = p.bidType;
+        document.getElementById('reportDeadline').value = p.reportDeadline || '01:30';
         document.getElementById('weekendToggle').checked = p.weekend || false;
         
         document.getElementById('assignModalTitle').textContent = "Edit Profile: " + p.clientName;
@@ -984,13 +1250,13 @@
       }
 
       window.openAssignModal = function(uid, name) {
-        // Reset form for new assignment
-        document.getElementById('assignModalTitle').textContent = "Assign New Profile";
+        document.getElementById('assignModalTitle').textContent = "Assign New Profile to " + name;
         document.getElementById('saveProfileText').textContent = "Assign Profile";
         document.getElementById('editProfileId').value = "";
         document.getElementById('assignToUserId').value = uid;
         document.getElementById('clientName').value = "";
         document.getElementById('profileDetails').value = "";
+        document.getElementById('reportDeadline').value = "01:30";
         document.getElementById('resumeFileName').textContent = "Upload Resume (Optional)";
         document.getElementById('coverFileName').textContent = "Upload Cover Letter (Optional)";
         
@@ -1035,6 +1301,7 @@
         const bidderRate = document.getElementById('bidderRate').value;
         const quota = document.getElementById('profileQuota').value;
         const bidType = document.getElementById('bidType').value;
+        const reportDeadline = document.getElementById('reportDeadline').value;
         const weekend = document.getElementById('weekendToggle').checked;
 
         if (!clientName || !initialRate || !bidderRate || !quota) {
@@ -1067,12 +1334,14 @@
 
           const profileData = {
             assignedTo: uid,
+            assignedBy: currentUser.uid, 
             clientName,
             details,
             initialRate,
             bidderRate,
             quota,
             bidType,
+            reportDeadline,
             weekend,
             updatedAt: new Date().toISOString()
           };
@@ -1081,11 +1350,9 @@
           if (coverUrl) profileData.coverUrl = coverUrl;
 
           if (editPid) {
-            // Update existing
             await update(ref(db, 'profiles/' + editPid), profileData);
             showToast('Profile updated successfully!', 'success');
           } else {
-            // Create new
             profileData.createdAt = new Date().toISOString();
             const newProfileRef = push(ref(db, 'profiles'));
             await set(newProfileRef, profileData);
