@@ -188,6 +188,40 @@
       background: var(--surface-color);
     }
     .top-bar h1 { font-family: var(--font-head); font-size: 22px; }
+    
+    .top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* Global Countdown Timer */
+    .global-timer {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .global-timer.urgent {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: var(--danger);
+      color: var(--danger);
+      animation: pulse-border 1.5s infinite;
+    }
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
     .theme-toggle {
       background: var(--input-bg); border: 1px solid var(--border-color);
       width: 40px; height: 40px; border-radius: 50%;
@@ -228,7 +262,8 @@
     }
     .btn-primary { background: var(--primary); color: #fff; }
     [data-theme="dark"] .btn-primary { color: #000; }
-    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
     .btn-outline:hover { background: var(--input-bg); }
     
@@ -382,6 +417,7 @@
       .job-actions { width: 100%; }
       .job-actions button { flex: 1; }
       .grid-2 { grid-template-columns: 1fr; }
+      .global-timer { display: none; } 
     }
   </style>
 </head>
@@ -418,7 +454,13 @@
         <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="ph ph-list"></i></button>
         <h1 id="pageTitle">Overview</h1>
       </div>
-      <button class="theme-toggle" id="themeToggle"><i class="ph ph-moon" id="themeIcon"></i></button>
+      
+      <div class="top-bar-actions">
+        <div class="global-timer" id="globalTimer">
+          <i class="ph ph-clock"></i> <span id="globalTimerText">--h --m --s</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle"><i class="ph ph-moon" id="themeIcon"></i></button>
+      </div>
     </header>
 
     <div class="content-area">
@@ -427,7 +469,7 @@
       <section class="tab-content active" id="tab-overview">
         <div class="grid-3">
           <div class="card stat-card">
-            <h3>Weekly Earnings</h3>
+            <h3>Unpaid Balance</h3>
             <div class="value" id="overviewEarnings">$0.00</div>
             <div class="subtext" id="overviewNaira">₦0.00</div>
           </div>
@@ -598,9 +640,9 @@
       <section class="tab-content" id="tab-earnings">
         <div class="grid-2">
           <div class="card stat-card">
-            <h3>Current Wallet Balance (USD)</h3>
+            <h3>Unpaid Balance (USD)</h3>
             <div class="value" id="walletUSD">$0.00</div>
-            <div class="subtext">Next payout: Pending</div>
+            <div class="subtext">Pending payment</div>
           </div>
           <div class="card stat-card">
             <h3>Naira Equivalent</h3>
@@ -609,11 +651,13 @@
           </div>
         </div>
         <div class="card" style="margin-top: 20px;">
-          <h3 style="margin-bottom: 16px;">Weekly Reports</h3>
-          <div id="weeklyReportsList">
-            <p style="color: var(--text-muted); font-size: 14px;">No weekly reports generated yet. Submit daily reports to build your weekly ledger.</p>
+          <h3 style="margin-bottom: 16px;">Download Reports</h3>
+          <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">Generate a PDF report for your earnings. Once generated, the report will appear on the Admin dashboard for them to mark as Paid.</p>
+          
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn btn-outline" id="openDailyPdfBtn"><i class="ph ph-file-pdf"></i> Download Today's Report</button>
+            <button class="btn btn-primary" id="openBankDetailsBtn"><i class="ph ph-file-pdf"></i> Download Weekly Report</button>
           </div>
-          <button class="btn btn-primary" style="margin-top: 16px;" id="openBankDetailsBtn"><i class="ph ph-file-pdf"></i> Download Current Week PDF</button>
         </div>
       </section>
 
@@ -668,7 +712,7 @@
     <div class="modal-content">
       <button class="close-modal" onclick="document.getElementById('bankDetailsModal').classList.remove('active')"><i class="ph ph-x"></i></button>
       <h2 style="font-family: var(--font-head); margin-bottom: 20px;">Payment Details</h2>
-      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Please provide your bank details to generate the weekly report.</p>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Please provide your bank details to generate the report.</p>
       
       <div class="input-group">
         <label>Bank Name</label>
@@ -693,7 +737,7 @@
   <div id="pdfTemplate" class="pdf-template">
     <div class="pdf-header">
       <h1>HUSTLER MINDSET</h1>
-      <p>Weekly Payment Report</p>
+      <p id="pdfReportType">Weekly Payment Report</p>
     </div>
     
     <div class="pdf-details">
@@ -847,7 +891,7 @@
     });
 
     // ==========================================
-    // 2. DATA LOGIC
+    // 2. DATA LOGIC & TIMERS
     // ==========================================
     let currentUser = null;
     let userData = null;
@@ -856,11 +900,69 @@
     let currentPage = 1;
     const jobsPerPage = 100;
     let myAssignedProfiles = [];
-    let allMyApplications = [];
     let allMyDeductions = [];
     let totalDeductionAmount = 0;
-    
-    let submittedTodayReports = {}; 
+    let totalPaidAmount = 0; // NEW
+    let submittedWorkDates = {}; 
+    let globalTimerInterval = null;
+    let currentPdfType = 'weekly'; 
+
+    function getTimeRemaining(deadlineStr) {
+      if (!deadlineStr) deadlineStr = '01:30';
+      
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const watNow = new Date(utc + (3600000 * 1)); 
+
+      const parts = deadlineStr.split(':');
+      const targetHour = parseInt(parts[0]);
+      const targetMin = parseInt(parts[1]);
+
+      let target = new Date(watNow);
+      target.setHours(targetHour, targetMin, 0, 0);
+
+      if (watNow.getTime() > target.getTime()) {
+        target.setDate(target.getDate() + 1);
+      }
+
+      const diffMs = target.getTime() - watNow.getTime();
+      
+      if (diffMs <= 0) return { text: "Deadline Passed", urgent: true };
+
+      const h = Math.floor(diffMs / (1000 * 60 * 60));
+      const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      return { 
+        text: `${h}h ${m}m ${s}s`, 
+        urgent: h < 1 
+      };
+    }
+
+    function startGlobalTimer() {
+      const timerEl = document.getElementById('globalTimer');
+      const timerText = document.getElementById('globalTimerText');
+      
+      if (globalTimerInterval) clearInterval(globalTimerInterval);
+
+      let earliestDeadline = '01:30';
+      if (myAssignedProfiles.length > 0) {
+        earliestDeadline = myAssignedProfiles[0].reportDeadline || '01:30';
+      }
+
+      const updateTimer = () => {
+        const time = getTimeRemaining(earliestDeadline);
+        timerText.textContent = time.text;
+        if (time.urgent) {
+          timerEl.classList.add('urgent');
+        } else {
+          timerEl.classList.remove('urgent');
+        }
+      };
+
+      updateTimer();
+      globalTimerInterval = setInterval(updateTimer, 1000);
+    }
 
     setTimeout(() => {
       if (!window.firebaseReady) return;
@@ -901,9 +1003,10 @@
               avatarDiv.textContent = initials;
             }
 
-            loadProfiles();
+            await loadProfiles(); 
             loadJobBoard();
             loadUserApplications();
+            startGlobalTimer();
 
           } else {
             showToast('User profile not found.', 'error');
@@ -1196,6 +1299,8 @@
             if (myAssignedProfiles.length > 0) {
               emptyState.style.display = 'none';
               myAssignedProfiles.forEach(p => {
+                const timerId = `timer-${p.id}`;
+                
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
@@ -1209,11 +1314,21 @@
                       <div style="font-size: 12px; color: var(--text-muted);">Quota: ${p.quota}/day</div>
                     </div>
                   </div>
-                  <div style="margin-top: 16px;">
-                    <button class="btn btn-outline" style="width: 100%;" onclick="openProfileModal('${p.id}')">View Details</button>
+                  <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div id="${timerId}" style="font-family: monospace; font-weight: bold; font-size: 14px; color: var(--success); display: flex; align-items: center; gap: 6px;">
+                      <i class="ph ph-clock"></i> --h --m --s
+                    </div>
+                    <button class="btn btn-outline" onclick="openProfileModal('${p.id}')">View Details</button>
                   </div>
                 `;
                 grid.appendChild(card);
+
+                const profileTimerEl = document.getElementById(timerId);
+                setInterval(() => {
+                  const time = getTimeRemaining(p.reportDeadline || '01:30');
+                  profileTimerEl.innerHTML = `<i class="ph ph-clock"></i> ${time.text}`;
+                  profileTimerEl.style.color = time.urgent ? 'var(--danger)' : 'var(--success)';
+                }, 1000);
 
                 const option = document.createElement('option');
                 option.value = p.id;
@@ -1406,8 +1521,8 @@
           return;
         }
 
-        if (submittedTodayReports[profileId]) {
-          showToast(`You have already submitted a report for this profile today. Try again tomorrow.`, 'error');
+        if (submittedWorkDates[profileId]) {
+          showToast(`You have already submitted a report for this profile for this workday.`, 'error');
           return;
         }
 
@@ -1419,6 +1534,20 @@
         btn.textContent = "Submitting...";
 
         try {
+          const now = new Date();
+          const watOffset = 60 * 60 * 1000; 
+          const watDate = new Date(now.getTime() + watOffset);
+          
+          const deadlineParts = (profile.reportDeadline || '01:30').split(':');
+          const deadlineHour = parseInt(deadlineParts[0]);
+          const deadlineMinute = parseInt(deadlineParts[1]);
+
+          let workDate = new Date(watDate);
+          if (watDate.getHours() < deadlineHour || (watDate.getHours() === deadlineHour && watDate.getMinutes() < deadlineMinute)) {
+            workDate.setDate(workDate.getDate() - 1);
+          }
+          const workDateStr = workDate.toISOString().split('T')[0]; 
+
           for(let i = 0; i < count; i++) {
             const newAppRef = push(ref(db, 'applications'));
             await set(newAppRef, {
@@ -1427,6 +1556,7 @@
               clientName: profile.clientName,
               initialRate: profile.initialRate,
               bidderRate: profile.bidderRate,
+              workDate: workDateStr,
               date: new Date().toISOString()
             });
           }
@@ -1434,11 +1564,13 @@
           const newReportRef = push(ref(db, 'dailyReports'));
           await set(newReportRef, {
             userId: currentUser.uid,
+            bidderName: userData.fullName,
             profileId: profileId,
             clientName: profile.clientName,
             count: count,
             quotaTarget: parseInt(profile.quota),
             notes: notes,
+            workDate: workDateStr,
             date: new Date().toISOString()
           });
 
@@ -1461,8 +1593,7 @@
             showToast(`Successfully recorded ${count} applications for ${profile.clientName}!`, 'success');
           }
 
-          submittedTodayReports[profileId] = true;
-
+          submittedWorkDates[profileId] = true;
           document.getElementById('reportAppsCount').value = '';
           document.getElementById('reportNotes').value = '';
           
@@ -1491,10 +1622,15 @@
         const now = new Date();
         const watOffset = 60 * 60 * 1000; 
         const watDate = new Date(now.getTime() + watOffset);
-        const todayStr = watDate.toISOString().split('T')[0];
+        let currentWorkDate = new Date(watDate);
+        
+        if (watDate.getHours() < 1 || (watDate.getHours() === 1 && watDate.getMinutes() < 30)) {
+          currentWorkDate.setDate(currentWorkDate.getDate() - 1);
+        }
+        const currentWorkDateStr = currentWorkDate.toISOString().split('T')[0];
 
         let todayProfileCounts = {};
-        submittedTodayReports = {};
+        submittedWorkDates = {};
 
         try {
           const appsSnap = await get(ref(db, 'applications'));
@@ -1507,15 +1643,6 @@
                 myApps.push({ id: k, ...apps[k] });
                 totalAppsCount++;
                 grossEarnings += parseFloat(apps[k].bidderRate || 0);
-
-                const appDate = new Date(apps[k].date);
-                const appWatDate = new Date(appDate.getTime() + watOffset);
-                const appDateStr = appWatDate.toISOString().split('T')[0];
-                
-                if (appDateStr === todayStr) {
-                  if (!todayProfileCounts[apps[k].profileId]) todayProfileCounts[apps[k].profileId] = 0;
-                  todayProfileCounts[apps[k].profileId]++;
-                }
               }
             });
 
@@ -1542,11 +1669,9 @@
               if (reports[k].userId === currentUser.uid) {
                 myReports.push({ id: k, ...reports[k] });
                 
-                const repDate = new Date(reports[k].date);
-                const repWatDate = new Date(repDate.getTime() + watOffset);
-                const repDateStr = repWatDate.toISOString().split('T')[0];
-                if (repDateStr === todayStr) {
-                  submittedTodayReports[reports[k].profileId] = true;
+                if (reports[k].workDate === currentWorkDateStr) {
+                  submittedWorkDates[reports[k].profileId] = true;
+                  todayProfileCounts[reports[k].profileId] = parseInt(reports[k].count);
                 }
               }
             });
@@ -1560,7 +1685,7 @@
                     <strong>${r.clientName}</strong>
                     <span>${r.count} apps</span>
                   </div>
-                  <div style="font-size: 12px; color: var(--text-muted);">${new Date(r.date).toLocaleDateString()}</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">Work Date: ${r.workDate} | Submitted: ${new Date(r.date).toLocaleString()}</div>
                 </div>
               `).join('');
 
@@ -1571,14 +1696,13 @@
                   </div>
                   <div>
                     <div style="font-weight: 500; font-size: 14px;">Submitted ${r.count} apps for ${r.clientName}</div>
-                    <div style="font-size: 12px; color: var(--text-muted);">${new Date(r.date).toLocaleString()}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Work Date: ${r.workDate}</div>
                   </div>
                 </div>
               `).join('');
             }
           }
 
-          // FETCH APPROVED DEDUCTIONS
           const dedSnap = await get(ref(db, 'deductions'));
           allMyDeductions = [];
           totalDeductionAmount = 0;
@@ -1592,14 +1716,25 @@
             });
           }
 
-          // CALCULATE NET EARNINGS
-          let netEarnings = grossEarnings - totalDeductionAmount;
-          if (netEarnings < 0) netEarnings = 0;
+          // FETCH PAID REPORTS TO CALCULATE UNPAID BALANCE
+          const paySnap = await get(ref(db, 'paymentHistory'));
+          totalPaidAmount = 0;
+          if (paySnap.exists()) {
+            const pays = paySnap.val();
+            Object.keys(pays).forEach(k => {
+              if (pays[k].userId === currentUser.uid && pays[k].status === 'paid') {
+                totalPaidAmount += parseFloat(pays[k].amountUSD || 0);
+              }
+            });
+          }
 
-          document.getElementById('walletUSD').textContent = `$${netEarnings.toFixed(2)}`;
-          document.getElementById('walletNGN').textContent = `₦${(netEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-          document.getElementById('overviewEarnings').textContent = `$${netEarnings.toFixed(2)}`;
-          document.getElementById('overviewNaira').textContent = `₦${(netEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+          let unpaidEarnings = grossEarnings - totalDeductionAmount - totalPaidAmount;
+          if (unpaidEarnings < 0) unpaidEarnings = 0;
+
+          document.getElementById('walletUSD').textContent = `$${unpaidEarnings.toFixed(2)}`;
+          document.getElementById('walletNGN').textContent = `₦${(unpaidEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+          document.getElementById('overviewEarnings').textContent = `$${unpaidEarnings.toFixed(2)}`;
+          document.getElementById('overviewNaira').textContent = `₦${(unpaidEarnings * exchangeRate).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
           document.getElementById('overviewTotalApps').textContent = totalAppsCount;
 
           overviewQuotaEl.innerHTML = '';
@@ -1623,9 +1758,9 @@
           
           const updateSubmitBtnState = () => {
             const selectedId = reportProfileSelect.value;
-            if (selectedId && submittedTodayReports[selectedId]) {
+            if (selectedId && submittedWorkDates[selectedId]) {
               submitBtn.disabled = true;
-              submitBtn.textContent = "Already Submitted Today";
+              submitBtn.textContent = "Already Submitted for Workday";
               submitBtn.style.opacity = '0.5';
             } else {
               submitBtn.disabled = false;
@@ -1649,7 +1784,13 @@
       }
 
       // --- PDF GENERATION WITH BANK MODAL ---
+      document.getElementById('openDailyPdfBtn').addEventListener('click', () => {
+        currentPdfType = 'daily';
+        document.getElementById('bankDetailsModal').classList.add('active');
+      });
+
       document.getElementById('openBankDetailsBtn').addEventListener('click', () => {
+        currentPdfType = 'weekly';
         document.getElementById('bankDetailsModal').classList.add('active');
       });
 
@@ -1670,29 +1811,78 @@
 
         document.getElementById('pdfName').textContent = userData.fullName;
         
-        const startOfWeek = new Date();
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(endOfWeek.getDate() + 6);
+        const now = new Date();
+        const watOffset = 60 * 60 * 1000; 
+        const watDate = new Date(now.getTime() + watOffset);
+        let currentWorkDate = new Date(watDate);
         
-        document.getElementById('pdfPeriod').textContent = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+        if (watDate.getHours() < 1 || (watDate.getHours() === 1 && watDate.getMinutes() < 30)) {
+          currentWorkDate.setDate(currentWorkDate.getDate() - 1);
+        }
+        const currentWorkDateStr = currentWorkDate.toISOString().split('T')[0];
+
+        let periodStr = '';
+        let reportGross = 0;
+        let reportDeductions = 0;
+        let reportApps = 0;
+
+        if (currentPdfType === 'weekly') {
+          const startOfWeek = new Date();
+          startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(endOfWeek.getDate() + 6);
+          periodStr = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+          document.getElementById('pdfReportType').textContent = "Weekly Payment Report";
+          
+          reportGross = parseFloat(document.getElementById('walletUSD').textContent.replace('$', '')) || 0;
+          reportDeductions = totalDeductionAmount;
+          reportApps = document.getElementById('overviewTotalApps').textContent;
+
+        } else {
+          periodStr = currentWorkDateStr;
+          document.getElementById('pdfReportType').textContent = "Daily Payment Report";
+
+          const appsSnap = await get(ref(db, 'applications'));
+          if (appsSnap.exists()) {
+            reportGross = 0;
+            reportApps = 0;
+            const apps = appsSnap.val();
+            Object.keys(apps).forEach(k => {
+               if (apps[k].userId === currentUser.uid && apps[k].workDate === currentWorkDateStr) {
+                 reportGross += parseFloat(apps[k].bidderRate);
+                 reportApps++;
+               }
+            });
+          }
+
+          const dedSnap = await get(ref(db, 'deductions'));
+          if (dedSnap.exists()) {
+             reportDeductions = 0;
+             const deds = dedSnap.val();
+             Object.keys(deds).forEach(k => {
+               if (deds[k].userId === currentUser.uid && deds[k].status === 'approved' && deds[k].date.startsWith(currentWorkDateStr)) {
+                 reportDeductions += parseFloat(deds[k].amount);
+               }
+             });
+          }
+        }
+        
+        let netPayable = reportGross - reportDeductions;
+        if (netPayable < 0) netPayable = 0;
+
+        document.getElementById('pdfPeriod').textContent = periodStr;
         document.getElementById('pdfRef').textContent = `HM-${currentUser.uid.substring(0, 5).toUpperCase()}-${new Date().getTime().toString().slice(-4)}`;
         document.getElementById('pdfDate').textContent = new Date().toLocaleString();
         
-        let currentBalance = parseFloat(document.getElementById('walletUSD').textContent.replace('$', '')) || 0;
-        let totalApps = document.getElementById('overviewTotalApps').textContent;
+        document.getElementById('pdfApps').textContent = reportApps;
+        document.getElementById('pdfGrossUSD').textContent = `$${reportGross.toFixed(2)}`;
+        document.getElementById('pdfGrossNGN').textContent = `₦${(reportGross * exchangeRate).toLocaleString()}`;
         
-        let grossDisplay = currentBalance + totalDeductionAmount;
+        document.getElementById('pdfDeductionsUSD').textContent = `-$${reportDeductions.toFixed(2)}`;
+        document.getElementById('pdfDeductionsNGN').textContent = `-₦${(reportDeductions * exchangeRate).toLocaleString()}`;
 
-        document.getElementById('pdfApps').textContent = totalApps;
-        document.getElementById('pdfGrossUSD').textContent = `$${grossDisplay.toFixed(2)}`;
-        document.getElementById('pdfGrossNGN').textContent = `₦${(grossDisplay * exchangeRate).toLocaleString()}`;
-        
-        document.getElementById('pdfDeductionsUSD').textContent = `-$${totalDeductionAmount.toFixed(2)}`;
-        document.getElementById('pdfDeductionsNGN').textContent = `-₦${(totalDeductionAmount * exchangeRate).toLocaleString()}`;
-
-        document.getElementById('pdfNetUSD').textContent = `$${currentBalance.toFixed(2)}`;
-        document.getElementById('pdfNetNGN').textContent = `₦${(currentBalance * exchangeRate).toLocaleString()}`;
+        document.getElementById('pdfNetUSD').textContent = `$${netPayable.toFixed(2)}`;
+        document.getElementById('pdfNetNGN').textContent = `₦${(netPayable * exchangeRate).toLocaleString()}`;
 
         document.getElementById('pdfBank').textContent = bankName;
         document.getElementById('pdfAccountNum').textContent = accountNumber;
@@ -1713,9 +1903,23 @@
           const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
           
           pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-          pdf.save(`Hustler_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+          pdf.save(`Hustler_${currentPdfType === 'weekly' ? 'Weekly' : 'Daily'}_Report_${new Date().toISOString().split('T')[0]}.pdf`);
           
-          showToast('PDF Report downloaded successfully!', 'success');
+          showToast('PDF Report downloaded successfully! Admin notified.', 'success');
+          
+          const newHistoryRef = push(ref(db, 'paymentHistory'));
+          await set(newHistoryRef, {
+            userId: currentUser.uid,
+            bidderName: userData.fullName,
+            type: currentPdfType,
+            period: periodStr,
+            amountUSD: netPayable,
+            amountNGN: netPayable * exchangeRate,
+            status: 'pending',
+            bankDetails: { bankName, accountNumber, accountHolder },
+            generatedAt: new Date().toISOString()
+          });
+
           document.getElementById('bankDetailsModal').classList.remove('active');
         } catch (err) {
           element.style.left = '-9999px';
